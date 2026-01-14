@@ -1,0 +1,2 @@
+"""Forecast data models (scaffold)."""
+

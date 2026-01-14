@@ -1,0 +1,13 @@
+[project]
+name = "l5-interface"
+version = "0.0.0"
+description = "Textual CLI interface for carbon-, application-, and availability-aware scheduling"
+requires-python = ">=3.10"
+dependencies = [
+  "textual>=0.50.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+

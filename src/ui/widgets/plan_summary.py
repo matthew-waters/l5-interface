@@ -1,0 +1,2 @@
+"""Plan summary widget (scaffold)."""
+

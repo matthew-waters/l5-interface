@@ -1,0 +1,2 @@
+"""Data freshness tracking (scaffold)."""
+

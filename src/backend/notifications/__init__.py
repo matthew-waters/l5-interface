@@ -1,0 +1,2 @@
+"""Notifications (email, alerts) (scaffold)."""
+

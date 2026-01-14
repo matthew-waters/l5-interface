@@ -1,0 +1,2 @@
+"""Workloads table widget (scaffold)."""
+
