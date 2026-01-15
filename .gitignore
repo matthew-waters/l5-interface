@@ -20,3 +20,5 @@ data/workloads/*.json
 data/configs/*.json
 data/profiles/*.json
 
+*.env
+

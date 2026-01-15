@@ -14,19 +14,21 @@ from src.backend.data.fleet.models import (
     RequestGroup,
     SpotPrice,
 )
-from src.config.settings import get_spot_fleet_api_base_url
+from src.config.settings import get_spot_fleet_api_base_url, get_spot_fleet_api_key
 
 
 class SpotFleetAPIClient:
     """HTTP client for Spot Fleet API."""
 
-    def __init__(self, base_url: str | None = None) -> None:
+    def __init__(self, base_url: str | None = None, *, api_key: str | None = None) -> None:
         """Initialize the API client.
 
         Args:
             base_url: Base URL for the API. If None, uses value from config.
+            api_key: API key to send as `x-api-key` header. If None, uses value from config.
         """
         self.base_url = (base_url or get_spot_fleet_api_base_url()).rstrip("/")
+        self.api_key = api_key if api_key is not None else get_spot_fleet_api_key()
 
     def _get(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         """Make a GET request to the API.
@@ -42,7 +44,11 @@ class SpotFleetAPIClient:
             requests.RequestException: If the request fails
         """
         url = f"{self.base_url}{endpoint}"
-        response = requests.get(url, params=params, timeout=30)
+        headers: dict[str, str] = {}
+        if self.api_key:
+            headers["x-api-key"] = self.api_key
+
+        response = requests.get(url, params=params, headers=headers or None, timeout=30)
         response.raise_for_status()
         return response.json()
 

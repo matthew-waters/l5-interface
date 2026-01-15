@@ -67,10 +67,10 @@ class PlacementScore:
         """Create PlacementScore from API response dictionary."""
         return cls(
             measured_at=_parse_iso_datetime(data["measured_at"]),
-            score=float(data["score"]),
+            score=float(data["placement_score"]),
             availability_zone=str(data["availability_zone"]),
             target_capacity=int(data["target_capacity"]),
-            request_group_id=int(data["request_group_id"]),
+            request_group_id=int(data["group_id"]),
         )
 
 
