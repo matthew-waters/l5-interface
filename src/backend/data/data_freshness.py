@@ -60,8 +60,9 @@ class DataFreshnessTracker:
     def update_availability_freshness(self, timestamp: datetime | None = None) -> None:
         """Update the spot fleet availability data freshness timestamp.
         """
+        if timestamp is not None and timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
         self._availability_last_updated = timestamp
-        print("Availability last updated: ", self._availability_last_updated)
 
     def check_availability_freshness_from_api(self) -> datetime | None:
         """Check the actual data freshness from the Spot Fleet API.
