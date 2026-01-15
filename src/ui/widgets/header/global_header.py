@@ -49,7 +49,6 @@ class GlobalHeader(Static):
     GlobalHeader .freshness {
         margin-left: 1;
         width: auto;
-        text-wrap: nowrap;
     }
     
     GlobalHeader .freshness.stale {
