@@ -69,18 +69,22 @@ class GlobalHeader(Static):
             yield Static("Scheduling System", classes="app-name")
             with Horizontal(classes="right-section"):
                 yield Static("00:00:00", id="time_display", classes="time")
-                yield Static("Carbon: Never | Fleet: Never", id="freshness_display", classes="freshness")
+                yield Static("Carbon:  | Fleet: ", id="freshness_display", classes="freshness")
 
     def on_mount(self) -> None:
         """Set up periodic updates when widget is mounted."""
         self.update_time()
 
-        self._freshness_tracker.refresh_availability_freshness_from_api()
-        self.update_freshness()
-        
+        self.set_timer(0.1, self._initial_refresh)
+
         self.set_interval(1.0, self.update_time)
         self.set_interval(5.0, self.update_freshness)  # Update freshness display every 5 seconds
-        self.set_interval(30.0, self._refresh_freshness_from_api)  # Check API every 30 seconds
+        self.set_interval(180.0, self._refresh_freshness_from_api)  # Check API every 3 minutes
+
+    def _initial_refresh(self) -> None:
+        """Run the first freshness refresh after the UI has mounted."""
+        self._refresh_freshness_from_api()
+        self.update_freshness()
 
     def update_time(self) -> None:
         """Update the displayed time."""
@@ -98,9 +102,6 @@ class GlobalHeader(Static):
         try:
             carbon_freshness = self._freshness_tracker.get_carbon_freshness()
             availability_freshness = self._freshness_tracker.get_availability_freshness()
-
-            print("Carbon freshness: ", carbon_freshness)
-            print("Availability freshness: ", availability_freshness)
 
             carbon_age = carbon_freshness.format_age()
             availability_age = availability_freshness.format_age()

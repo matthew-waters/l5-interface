@@ -118,7 +118,6 @@ class DataFreshnessTracker:
         """
 
         api_timestamp = self.check_availability_freshness_from_api()
-        print("API timestamp: ", api_timestamp)
         if api_timestamp is not None:
             self.update_availability_freshness(api_timestamp)
             return True
