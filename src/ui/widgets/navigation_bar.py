@@ -3,15 +3,23 @@
 from __future__ import annotations
 
 from textual.app import ComposeResult
+from textual.containers import Horizontal
 from textual.widgets import Static
 
 
 class NavigationBar(Static):
     """Bottom navigation hints."""
 
+    DEFAULT_CSS = """
+    NavigationBar {
+        width: 100%;
+        height: auto;
+    }
+    """
+
     def compose(self) -> ComposeResult:
         yield Static(
-            "Keys: [h] home  [w] workloads  [t] timeline  [e] execution  [c] create (home)  [q] quit",
+            "[bold]h[/bold] home  [bold]w[/bold] workloads  [bold]t[/bold] timeline  [bold]e[/bold] execution  [bold]c[/bold] create  [bold]q[/bold] quit",
             classes="muted",
         )
 

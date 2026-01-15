@@ -6,13 +6,12 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Footer
 
 from src.storage.storage_manager import StorageManager
-from src.ui.screens.execution_overview_screen import ExecutionOverviewScreen
-from src.ui.screens.home_screen import HomeScreen
-from src.ui.screens.timeline_screen import TimelineScreen
-from src.ui.screens.workloads_list_screen import WorkloadsListScreen
+from src.ui.screens.execution_overview.execution_overview_screen import ExecutionOverviewScreen
+from src.ui.screens.home.home_screen import HomeScreen
+from src.ui.screens.global_timeline.timeline_screen import TimelineScreen
+from src.ui.screens.list_workloads.workloads_list_screen import WorkloadsListScreen
 
 
 class L5InterfaceApp(App[None]):
@@ -42,7 +41,8 @@ class L5InterfaceApp(App[None]):
         self.push_screen("home")
 
     def compose(self) -> ComposeResult:
-        yield Footer()
+        # No widgets at app level - all widgets are in screens
+        yield from ()
 
     def action_go_home(self) -> None:
         self.switch_screen("home")
