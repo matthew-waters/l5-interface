@@ -7,8 +7,8 @@ from textual.containers import Container
 from textual.screen import Screen
 
 from src.ui.widgets.carbon_snapshot import CarbonSnapshot
+from src.ui.widgets.global_header import GlobalHeader
 from src.ui.widgets.navigation_bar import NavigationBar
-from src.ui.widgets.status_header import StatusHeader
 from src.ui.widgets.system_timeline import SystemTimeline
 from src.ui.widgets.workload_card import UpcomingWorkloads
 
@@ -21,7 +21,7 @@ class HomeScreen(Screen[None]):
     ]
 
     def compose(self) -> ComposeResult:
-        yield StatusHeader(classes="card")
+        yield GlobalHeader()
         with Container(id="home_grid"):
             yield UpcomingWorkloads(classes="card")
             yield CarbonSnapshot(classes="card")

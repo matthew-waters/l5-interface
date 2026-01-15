@@ -6,7 +6,7 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Footer, Header
+from textual.widgets import Footer
 
 from src.storage.storage_manager import StorageManager
 from src.ui.screens.execution_overview_screen import ExecutionOverviewScreen
@@ -42,7 +42,6 @@ class L5InterfaceApp(App[None]):
         self.push_screen("home")
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True)
         yield Footer()
 
     def action_go_home(self) -> None:

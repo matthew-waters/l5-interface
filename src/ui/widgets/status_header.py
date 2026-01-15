@@ -13,8 +13,21 @@ class StatusHeader(Static):
     """Application identity + profile + data freshness indicator."""
 
     DEFAULT_CSS = """
+    StatusHeader {
+      height: auto;
+      width: 100%;
+    }
     StatusHeader Horizontal {
       height: auto;
+      width: 100%;
+      align: center middle;
+    }
+    StatusHeader Static {
+      height: auto;
+    }
+    StatusHeader .section_title {
+      width: 1fr;
+      content-align: left middle;
     }
     StatusHeader .right {
       width: 1fr;

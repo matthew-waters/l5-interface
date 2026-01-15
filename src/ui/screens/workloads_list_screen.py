@@ -9,6 +9,7 @@ from textual.screen import Screen
 from textual.widgets import DataTable, Static
 
 from src.models.workload import Workload, WorkloadStatus
+from src.ui.widgets.global_header import GlobalHeader
 
 
 class WorkloadsListScreen(Screen[None]):
@@ -24,6 +25,7 @@ class WorkloadsListScreen(Screen[None]):
     ]
 
     def compose(self) -> ComposeResult:
+        yield GlobalHeader()
         yield Static("Workloads", classes="section_title")
         yield Static("Keys: [n] new draft  [g] refresh  [a/s/r/c] sort", classes="muted")
         table = DataTable(id="workloads_table", zebra_stripes=True)
