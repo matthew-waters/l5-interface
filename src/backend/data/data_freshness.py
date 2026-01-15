@@ -52,7 +52,6 @@ class DataFreshnessTracker:
         self._carbon_last_updated: datetime | None = None
         self._availability_last_updated: datetime | None = None
         self._api_client = api_client
-        print("initialised data freshness tracker")
 
     def update_carbon_freshness(self, timestamp: datetime | None = None) -> None:
         """Update the carbon intensity data freshness timestamp."""

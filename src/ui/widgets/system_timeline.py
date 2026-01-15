@@ -13,6 +13,5 @@ class SystemTimeline(Static):
     def compose(self) -> ComposeResult:
         yield Static("System timeline (next 24h)", classes="section_title")
         with Vertical():
-            yield Static("Now ──◼︎──◻︎──◼︎──◼︎──◻︎──► +24h", classes="muted")
-            yield Static("Legend: ◻︎ low carbon | ◼︎ high carbon", classes="muted")
+            yield Static("Now +24h", classes="muted")
 

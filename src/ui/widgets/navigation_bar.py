@@ -12,7 +12,7 @@ class NavigationBar(Static):
 
     DEFAULT_CSS = """
     NavigationBar {
-        width: 100%;
+        width: 50px;
         height: auto;
     }
     """

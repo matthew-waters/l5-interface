@@ -12,6 +12,7 @@ from src.ui.widgets.navigation_bar import NavigationBar
 from src.ui.widgets.system_timeline import SystemTimeline
 from src.ui.widgets.workload_card import UpcomingWorkloads
 
+from textual import log
 
 class HomeScreen(Screen[None]):
     """Status dashboard + navigation hub."""

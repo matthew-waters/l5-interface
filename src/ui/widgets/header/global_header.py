@@ -65,7 +65,7 @@ class GlobalHeader(Static):
 
     def compose(self) -> ComposeResult:
         """Compose the header layout."""
-        with Horizontal():
+        with Horizontal(classes="global-header"):
             yield Static("Scheduling System", classes="app-name")
             with Horizontal(classes="right-section"):
                 yield Static("00:00:00", id="time_display", classes="time")
@@ -98,6 +98,9 @@ class GlobalHeader(Static):
         try:
             carbon_freshness = self._freshness_tracker.get_carbon_freshness()
             availability_freshness = self._freshness_tracker.get_availability_freshness()
+
+            print("Carbon freshness: ", carbon_freshness)
+            print("Availability freshness: ", availability_freshness)
 
             carbon_age = carbon_freshness.format_age()
             availability_age = availability_freshness.format_age()

@@ -1,7 +1,7 @@
 /* Default Textual theme. Keep it simple and readable. */
 
 Screen {
-  padding: 1 2;
+  overflow-y: auto;
 }
 
 .section_title {
@@ -14,10 +14,12 @@ Screen {
 
 #home_grid {
   layout: grid;
-  grid-size: 2;
+  /* 2 columns x 2 rows so 3 "cards" are visible (the 3rd goes on row 2). */
+  grid-size: 2 2;
   grid-columns: 1fr 1fr;
-  grid-rows: auto;
+  grid-rows: auto auto;
   grid-gutter: 1 2;
+  overflow-y: auto;
 }
 
 .card {
@@ -28,6 +30,6 @@ Screen {
 #home_nav {
   dock: bottom;
   height: auto;
-  border-top: solid $panel;
+  border: solid $panel;
   padding: 1 2;
 }
