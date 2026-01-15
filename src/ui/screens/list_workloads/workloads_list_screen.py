@@ -9,7 +9,7 @@ from textual.screen import Screen
 from textual.widgets import DataTable, Static
 
 from src.models.workload import Workload, WorkloadStatus
-from src.ui.widgets.global_header import GlobalHeader
+from src.ui.widgets.header.global_header import GlobalHeader
 
 
 class WorkloadsListScreen(Screen[None]):

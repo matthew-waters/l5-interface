@@ -1,2 +1,0 @@
-"""Runtime prediction interface (scaffold)."""
-

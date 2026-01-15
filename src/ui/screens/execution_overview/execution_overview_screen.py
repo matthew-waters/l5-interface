@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static
 
-from src.ui.widgets.global_header import GlobalHeader
+from src.ui.widgets.header.global_header import GlobalHeader
 
 
 class ExecutionOverviewScreen(Screen[None]):

@@ -1,2 +1,0 @@
-"""Cloud workload management (scaffold)."""
-
