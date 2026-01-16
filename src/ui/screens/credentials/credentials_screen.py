@@ -8,6 +8,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Input, Static, TextArea
 
 from src.storage.config_store import CredentialsConfig
+from src.ui.messages import CredentialsChanged
 from src.ui.widgets.header.global_header import GlobalHeader
 
 
@@ -29,8 +30,7 @@ class CredentialsScreen(Screen[None]):
         with VerticalScroll(id="credentials_scroll"):
             # Spot Fleet
             with Container(classes="card"):
-                yield Static("Spot Fleet", classes="section_title")
-                yield Static("API key", classes="muted")
+                yield Static("Spot Fleet Data API Key", classes="section_title")
                 yield Input(
                     id="spot_fleet_api_key",
                     placeholder="Enter Spot Fleet API key",
@@ -89,6 +89,10 @@ class CredentialsScreen(Screen[None]):
     def _save(self) -> None:
         cfg = self._read_from_form()
         getattr(self.app, "storage").config.save_credentials(cfg)
+
+        # Trigger immediate refresh of header freshness indicators (e.g., Spot Fleet API key).
+        self.app.post_message(CredentialsChanged())
+
         notify = getattr(self.app, "notify", None)
         if callable(notify):
             notify("Credentials saved.", severity="information")

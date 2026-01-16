@@ -8,11 +8,13 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 
 from src.storage.storage_manager import StorageManager
+from src.ui.messages import CredentialsChanged
 from src.ui.screens.credentials.credentials_screen import CredentialsScreen
 from src.ui.screens.execution_overview.execution_overview_screen import ExecutionOverviewScreen
 from src.ui.screens.home.home_screen import HomeScreen
 from src.ui.screens.global_timeline.timeline_screen import TimelineScreen
 from src.ui.screens.list_workloads.workloads_list_screen import WorkloadsListScreen
+from src.ui.widgets.header.global_header import GlobalHeader
 
 
 class L5InterfaceApp(App[None]):
@@ -61,5 +63,14 @@ class L5InterfaceApp(App[None]):
 
     def action_go_credentials(self) -> None:
         self.switch_screen("credentials")
+
+    def on_credentials_changed(self, message: CredentialsChanged) -> None:
+        """Refresh any mounted headers immediately after credentials are saved."""
+        # Textual queries are CSS-selector based; query for the widget type name.
+        # We query the active screen since that's where the mounted GlobalHeader lives.
+        for header in self.screen.query("GlobalHeader"):
+            # `header` will be a GlobalHeader instance due to the selector.
+            header._refresh_freshness_from_api()
+            header.update_freshness()
 
 
