@@ -58,7 +58,7 @@ class GlobalHeader(Static):
     }
 
     GlobalHeader .hidden {
-        display: none;
+        visibility: hidden;
     }
     
     GlobalHeader .freshness.stale {
@@ -80,11 +80,11 @@ class GlobalHeader(Static):
             yield Static("Scheduling System", classes="app-name")
             with Horizontal(classes="right-section"):
                 yield Static("00:00:00", id="time_display", classes="time")
+                yield Static("Carbon: N/A | Fleet: N/A", id="freshness_display", classes="freshness")
                 yield LoadingIndicator(
                     id="freshness_spinner",
                     classes="freshness_spinner hidden",
                 )
-                yield Static("Carbon: N/A | Fleet: N/A", id="freshness_display", classes="freshness")
 
     def on_mount(self) -> None:
         """Set up periodic updates when widget is mounted."""

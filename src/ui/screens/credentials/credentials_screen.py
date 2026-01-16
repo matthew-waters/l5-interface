@@ -1,6 +1,7 @@
 """Credentials screen."""
 
 from __future__ import annotations
+from turtle import onclick
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, VerticalScroll
