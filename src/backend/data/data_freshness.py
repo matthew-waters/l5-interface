@@ -60,7 +60,12 @@ class DataFreshnessTracker:
     def update_availability_freshness(self, timestamp: datetime | None = None) -> None:
         """Update the spot fleet availability data freshness timestamp.
         """
-        if timestamp is not None and timestamp.tzinfo is None:
+        if timestamp is None:
+            self._availability_last_updated = None
+            return
+
+        # Normalize naive datetimes to UTC; keep aware datetimes as-is.
+        if timestamp.tzinfo is None:
             timestamp = timestamp.replace(tzinfo=timezone.utc)
         self._availability_last_updated = timestamp
 

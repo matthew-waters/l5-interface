@@ -8,6 +8,7 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 
 from src.storage.storage_manager import StorageManager
+from src.ui.screens.credentials.credentials_screen import CredentialsScreen
 from src.ui.screens.execution_overview.execution_overview_screen import ExecutionOverviewScreen
 from src.ui.screens.home.home_screen import HomeScreen
 from src.ui.screens.global_timeline.timeline_screen import TimelineScreen
@@ -27,6 +28,7 @@ class L5InterfaceApp(App[None]):
         Binding("w", "go_workloads", "Workloads"),
         Binding("t", "go_timeline", "Timeline"),
         Binding("e", "go_execution", "Execution"),
+        Binding("r", "go_credentials", "Credentials"),
         Binding("q", "quit", "Quit"),
     ]
 
@@ -35,6 +37,7 @@ class L5InterfaceApp(App[None]):
         self.storage = StorageManager(repo_root / "data")
 
         self.install_screen(HomeScreen(), name="home")
+        self.install_screen(CredentialsScreen(), name="credentials")
         self.install_screen(WorkloadsListScreen(), name="workloads")
         self.install_screen(TimelineScreen(), name="timeline")
         self.install_screen(ExecutionOverviewScreen(), name="execution")
@@ -55,5 +58,8 @@ class L5InterfaceApp(App[None]):
 
     def action_go_execution(self) -> None:
         self.switch_screen("execution")
+
+    def action_go_credentials(self) -> None:
+        self.switch_screen("credentials")
 
 
