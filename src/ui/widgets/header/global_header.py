@@ -64,6 +64,10 @@ class GlobalHeader(Static):
     GlobalHeader .freshness.stale {
         color: $warning;
     }
+
+    GlobalHeader .freshness.ok {
+        color: $success;
+    }
     """
 
     current_time: reactive[str] = reactive("")
@@ -164,11 +168,18 @@ class GlobalHeader(Static):
             freshness_widget.update(freshness_text)
 
             # Update styling based on staleness
-            if neso_freshness.is_stale or wt_freshness.is_stale or availability_freshness.is_stale:
-                freshness_widget.add_class("stale")
-            else:
+            all_ok = not (
+                neso_freshness.is_stale or wt_freshness.is_stale or availability_freshness.is_stale
+            )
+            if all_ok:
                 freshness_widget.remove_class("stale")
+                freshness_widget.add_class("ok")
+            else:
+                freshness_widget.remove_class("ok")
+                freshness_widget.add_class("stale")
         except Exception:
             # Fallback if there's an error
             freshness_widget = self.query_one("#freshness_display", Static)
             freshness_widget.update("NESO: N/A | WT: N/A | Fleet: N/A")
+            freshness_widget.remove_class("ok")
+            freshness_widget.remove_class("stale")
