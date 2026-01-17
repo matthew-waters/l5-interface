@@ -10,7 +10,7 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import LoadingIndicator, Static
 
-from src.backend.data.data_freshness import get_freshness_tracker
+from src.backend.data.freshness.tracker import get_freshness_tracker
 
 
 class GlobalHeader(Static):
@@ -80,7 +80,7 @@ class GlobalHeader(Static):
             yield Static("Scheduling System", classes="app-name")
             with Horizontal(classes="right-section"):
                 yield Static("00:00:00", id="time_display", classes="time")
-                yield Static("Carbon: N/A | Fleet: N/A", id="freshness_display", classes="freshness")
+                yield Static("NESO: N/A | WT: N/A | Fleet: N/A", id="freshness_display", classes="freshness")
                 yield LoadingIndicator(
                     id="freshness_spinner",
                     classes="freshness_spinner hidden",
@@ -128,6 +128,9 @@ class GlobalHeader(Static):
     def _refresh_freshness_worker(self) -> None:
         """Run the API refresh in a worker thread (so spinner can animate)."""
         try:
+            # Carbon sources (NESO / WattTime) + Fleet. Each is best-effort.
+            self._freshness_tracker.refresh_neso_freshness_from_api()
+            self._freshness_tracker.refresh_wt_freshness_from_api()
             self._freshness_tracker.refresh_availability_freshness_from_api()
         finally:
             # Ensure UI updates happen on the main thread.
@@ -144,32 +147,28 @@ class GlobalHeader(Static):
     def update_freshness(self) -> None:
         """Update the data freshness indicators."""
         try:
-            carbon_freshness = self._freshness_tracker.get_carbon_freshness()
+            neso_freshness = self._freshness_tracker.get_neso_freshness()
+            wt_freshness = self._freshness_tracker.get_wt_freshness()
             availability_freshness = self._freshness_tracker.get_availability_freshness()
 
-            carbon_age = carbon_freshness.format_age()
+            neso_age = neso_freshness.format_age()
+            wt_age = wt_freshness.format_age()
             availability_age = availability_freshness.format_age()
 
-            # If freshness can't be computed / is missing, show N/A rather than "Never".
-            if carbon_age == "Never":
-                carbon_age = "N/A"
-            if availability_age == "Never":
-                availability_age = "N/A"
-
-            # Format: "Carbon: 5m ago | Fleet: 2h ago"
+            # Format: "NESO: 5m ago | WT: 10m ago | Fleet: 2h ago"
             freshness_text = (
-                f"Carbon: {carbon_age} | Fleet: {availability_age}"
+                f"NESO: {neso_age} | WT: {wt_age} | Fleet: {availability_age}"
             )
 
             freshness_widget = self.query_one("#freshness_display", Static)
             freshness_widget.update(freshness_text)
 
             # Update styling based on staleness
-            if carbon_freshness.is_stale or availability_freshness.is_stale:
+            if neso_freshness.is_stale or wt_freshness.is_stale or availability_freshness.is_stale:
                 freshness_widget.add_class("stale")
             else:
                 freshness_widget.remove_class("stale")
         except Exception:
             # Fallback if there's an error
             freshness_widget = self.query_one("#freshness_display", Static)
-            freshness_widget.update("Carbon: N/A | Fleet: N/A")
+            freshness_widget.update("NESO: N/A | WT: N/A | Fleet: N/A")

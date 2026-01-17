@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from src.backend.data.data_freshness import get_freshness_tracker
+from src.backend.data.freshness.tracker import get_freshness_tracker
 from src.backend.data.fleet.api_client import SpotFleetAPIClient
 from src.backend.data.fleet.models import (
     InstancePool,

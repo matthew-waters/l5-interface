@@ -22,7 +22,8 @@ class WattTimeCarbonProvider:
     - Mapping helpers mirror your TS project (lbs/MWh → g/kWh conversion).
     """
 
-    provider_id = "watttime"
+    # Short id used in freshness/UI.
+    provider_id = "wt"
 
     def supports_region(self, region: str) -> bool:
         # Assume WattTime covers non-GB regions by default.

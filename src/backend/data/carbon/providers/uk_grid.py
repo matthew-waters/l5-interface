@@ -21,7 +21,8 @@ class UKGridCarbonProvider:
     - Mapping helpers mirror your TS project (actual uses `intensity.actual`, forecast uses `intensity.forecast`).
     """
 
-    provider_id = "uk_grid"
+    # Display/provider id used in freshness/UI ("NESO" UK grid).
+    provider_id = "neso"
 
     def supports_region(self, region: str) -> bool:
         r = normalize_region(region)
