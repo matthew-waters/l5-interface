@@ -8,7 +8,7 @@ from textual import work
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.reactive import reactive
-from textual.widgets import LoadingIndicator, Static
+from textual.widgets import Button, LoadingIndicator, Static
 
 from src.backend.data.freshness.tracker import get_freshness_tracker
 
@@ -19,7 +19,8 @@ class GlobalHeader(Static):
     DEFAULT_CSS = """
     GlobalHeader {
         dock: top;
-        height: 3;
+        /* 3 rows for content + 1 row for the bottom border */
+        height: 2;
         padding: 0 1;
         background: $surface;
         border-bottom: wide $primary;

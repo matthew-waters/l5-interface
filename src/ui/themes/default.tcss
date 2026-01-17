@@ -38,5 +38,6 @@ Screen {
   dock: bottom;
   height: auto;
   border: none;
-  border-top: solid $panel;
+  border-top: wide $primary;
+  background: $surface;
 }
