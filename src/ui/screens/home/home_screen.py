@@ -28,7 +28,7 @@ class HomeScreen(Screen[None]):
             yield UpcomingWorkloads(classes="card")
             yield CarbonSnapshot(classes="card")
             yield SystemTimeline(classes="card")
-        yield NavigationBar(id="home_nav")
+        yield NavigationBar(id="global_nav")
 
     def action_create_workload(self) -> None:
         self.app.switch_screen("create_workload")

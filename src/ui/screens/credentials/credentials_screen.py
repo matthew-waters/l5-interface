@@ -10,6 +10,7 @@ from textual.widgets import Button, Input, Static
 from src.storage.config_store import CredentialsConfig
 from src.ui.messages import CredentialsChanged
 from src.ui.widgets.header.global_header import GlobalHeader
+from src.ui.widgets.navigation_bar import NavigationBar
 
 
 class CredentialsScreen(Screen[None]):
@@ -39,11 +40,7 @@ class CredentialsScreen(Screen[None]):
 
     def compose(self) -> ComposeResult:
         yield GlobalHeader()
-        yield Static("Credentials", classes="section_title")
-        yield Static(
-            "Stored locally in data/configs/credentials.json (gitignored).",
-            classes="muted",
-        )
+
 
         with VerticalScroll(id="credentials_scroll"):
             # Spot Fleet
@@ -81,6 +78,8 @@ class CredentialsScreen(Screen[None]):
             with Horizontal(classes="card"):
                 yield Button("(s) Save", id="save_btn", variant="primary")
                 yield Button("Back to Home", id="back_btn")
+
+        yield NavigationBar(id="global_nav")
 
     def on_mount(self) -> None:
         self._load_into_form()

@@ -10,6 +10,7 @@ from textual.widgets import DataTable, Static
 
 from src.models.workload import Workload, WorkloadStatus
 from src.ui.widgets.header.global_header import GlobalHeader
+from src.ui.widgets.navigation_bar import NavigationBar
 
 
 class WorkloadsListScreen(Screen[None]):
@@ -41,6 +42,7 @@ class WorkloadsListScreen(Screen[None]):
             "REGION",
         )
         yield table
+        yield NavigationBar(id="global_nav")
 
     def on_mount(self) -> None:
         self._sort_mode = "start"

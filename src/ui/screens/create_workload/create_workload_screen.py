@@ -13,6 +13,7 @@ from src.ui.screens.create_workload.stage_1_workload_creation import Stage1Workl
 from src.ui.screens.create_workload.stage_2_job_specification import Stage2JobSpecification
 from src.ui.screens.create_workload.stage_3_hardware_config import Stage3HardwareConfig
 from src.ui.widgets.header.global_header import GlobalHeader
+from src.ui.widgets.navigation_bar import NavigationBar
 
 
 class CreateWorkloadScreen(Screen[None]):
@@ -129,6 +130,8 @@ class CreateWorkloadScreen(Screen[None]):
                 yield Static(">", classes="muted")
                 yield Static("2.3 Hardware", id="step_hardware", classes="step")
             yield Static("", id="footer_status", classes="muted")
+
+        yield NavigationBar(id="global_nav")
 
     def on_mount(self) -> None:
         self._refresh_drafts_list()

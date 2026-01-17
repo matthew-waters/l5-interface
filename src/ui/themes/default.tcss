@@ -34,7 +34,7 @@ Screen {
   height: 100%;
 }
 
-#home_nav {
+#global_nav {
   dock: bottom;
   height: auto;
   border: none;

@@ -15,7 +15,6 @@ from src.ui.screens.execution_overview.execution_overview_screen import Executio
 from src.ui.screens.home.home_screen import HomeScreen
 from src.ui.screens.global_timeline.timeline_screen import TimelineScreen
 from src.ui.screens.list_workloads.workloads_list_screen import WorkloadsListScreen
-from src.ui.widgets.header.global_header import GlobalHeader
 
 
 class L5InterfaceApp(App[None]):

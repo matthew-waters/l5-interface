@@ -7,6 +7,7 @@ from textual.screen import Screen
 from textual.widgets import Static
 
 from src.ui.widgets.header.global_header import GlobalHeader
+from src.ui.widgets.navigation_bar import NavigationBar
 
 
 class TimelineScreen(Screen[None]):
@@ -17,4 +18,5 @@ class TimelineScreen(Screen[None]):
         yield GlobalHeader()
         yield Static("Timeline (placeholder)", classes="section_title")
         yield Static("This screen will show a larger planning horizon.", classes="muted")
+        yield NavigationBar(id="global_nav")
 
