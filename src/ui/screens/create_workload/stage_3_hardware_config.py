@@ -25,7 +25,7 @@ class Stage3HardwareConfig(CreateWorkloadStage):
         self._pending_fleet_id: str | None = None
 
     def compose(self) -> ComposeResult:
-        with Container(classes="card"):
+        with Container():
             yield Static("Spot Fleet selection", classes="section_title")
             with Vertical():
                 yield Static("Fleet", classes="muted")
@@ -38,7 +38,7 @@ class Stage3HardwareConfig(CreateWorkloadStage):
                 yield Static("Target capacities: -", id="fleet_caps", classes="muted")
                 yield Static("Purpose: -", id="fleet_purpose", classes="muted")
 
-        with Container(classes="card"):
+        with Container():
             yield Static("Runtime estimate (required)", classes="section_title")
             yield Static(
                 "Provide an estimate for the selected fleet. Profiling is coming soon; manual entry works now.",
