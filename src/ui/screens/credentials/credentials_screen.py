@@ -124,10 +124,3 @@ class CredentialsScreen(Screen[None]):
             self._save()
         elif event.button.id == "back_btn":
             self.app.switch_screen("home")
-
-    def on_screen_resume(self, event: events.ScreenResume) -> None:
-        # Ensure nav highlight is correct immediately when this screen becomes active.
-        try:
-            self.query_one(NavigationBar).update_active_page()
-        except Exception:
-            pass

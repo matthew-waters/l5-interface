@@ -156,10 +156,3 @@ class WorkloadsListScreen(Screen[None]):
     def action_new_draft(self) -> None:
         getattr(self.app, "storage").workloads.create_draft("New workload")
         self.refresh_table()
-
-    def on_screen_resume(self, event: events.ScreenResume) -> None:
-        # Ensure nav highlight is correct immediately when this screen becomes active.
-        try:
-            self.query_one(NavigationBar).update_active_page()
-        except Exception:
-            pass

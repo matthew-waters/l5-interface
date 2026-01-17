@@ -147,13 +147,6 @@ class CreateWorkloadScreen(Screen[None]):
         except Exception:
             pass
 
-    def on_screen_resume(self, event: events.ScreenResume) -> None:
-        # Ensure nav highlight is correct immediately when this screen becomes active.
-        try:
-            self.query_one(NavigationBar).update_active_page()
-        except Exception:
-            pass
-
     # Public helpers (used by app/nav to start the flow)
     def start_new_draft(self) -> None:
         # The app/nav may call this immediately after switching screens; guard against

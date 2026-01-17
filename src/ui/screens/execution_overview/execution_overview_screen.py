@@ -20,10 +20,3 @@ class ExecutionOverviewScreen(Screen[None]):
         yield Static("Execution overview (placeholder)", classes="section_title")
         yield Static("This screen will show logs, interruptions, and plan details.", classes="muted")
         yield NavigationBar(id="global_nav")
-
-    def on_screen_resume(self, event: events.ScreenResume) -> None:
-        # Ensure nav highlight is correct immediately when this screen becomes active.
-        try:
-            self.query_one(NavigationBar).update_active_page()
-        except Exception:
-            pass

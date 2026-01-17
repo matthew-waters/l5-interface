@@ -51,25 +51,6 @@ class L5InterfaceApp(App[None]):
         # No widgets at app level - all widgets are in screens
         yield from ()
 
-    def action_go_home(self) -> None:
-        self.switch_screen("home")
-
-    def action_go_workloads(self) -> None:
-        self.switch_screen("workloads")
-
-    def action_go_create(self) -> None:
-        self.switch_screen("create_workload")
-        # The Create screen now opens in draft-picker mode.
-
-    def action_go_timeline(self) -> None:
-        self.switch_screen("timeline")
-
-    def action_go_execution(self) -> None:
-        self.switch_screen("execution")
-
-    def action_go_credentials(self) -> None:
-        self.switch_screen("credentials")
-
     def on_credentials_changed(self, message: CredentialsChanged) -> None:
         """Refresh any mounted headers immediately after credentials are saved."""
         # Textual queries are CSS-selector based; query for the widget type name.

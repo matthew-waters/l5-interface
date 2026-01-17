@@ -33,10 +33,3 @@ class HomeScreen(Screen[None]):
 
     def action_create_workload(self) -> None:
         self.app.switch_screen("create_workload")
-
-    def on_screen_resume(self, event: events.ScreenResume) -> None:
-        # Ensure nav highlight is correct immediately when this screen becomes active.
-        try:
-            self.query_one(NavigationBar).update_active_page()
-        except Exception:
-            pass
