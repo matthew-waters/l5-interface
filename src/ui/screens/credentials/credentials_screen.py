@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, VerticalScroll
 from textual.screen import Screen
@@ -124,3 +125,9 @@ class CredentialsScreen(Screen[None]):
         elif event.button.id == "back_btn":
             self.app.switch_screen("home")
 
+    def on_screen_resume(self, event: events.ScreenResume) -> None:
+        # Ensure nav highlight is correct immediately when this screen becomes active.
+        try:
+            self.query_one(NavigationBar).update_active_page()
+        except Exception:
+            pass

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from textual import events
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Static
@@ -20,3 +21,9 @@ class TimelineScreen(Screen[None]):
         yield Static("This screen will show a larger planning horizon.", classes="muted")
         yield NavigationBar(id="global_nav")
 
+    def on_screen_resume(self, event: events.ScreenResume) -> None:
+        # Ensure nav highlight is correct immediately when this screen becomes active.
+        try:
+            self.query_one(NavigationBar).update_active_page()
+        except Exception:
+            pass

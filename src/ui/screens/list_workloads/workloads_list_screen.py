@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from textual import events
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import DataTable, Static
@@ -156,3 +157,9 @@ class WorkloadsListScreen(Screen[None]):
         getattr(self.app, "storage").workloads.create_draft("New workload")
         self.refresh_table()
 
+    def on_screen_resume(self, event: events.ScreenResume) -> None:
+        # Ensure nav highlight is correct immediately when this screen becomes active.
+        try:
+            self.query_one(NavigationBar).update_active_page()
+        except Exception:
+            pass

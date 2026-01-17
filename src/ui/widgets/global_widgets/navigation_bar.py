@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from textual.app import ComposeResult
 from textual.containers import HorizontalScroll
+from textual.screen import Screen
 from textual.widgets import Button, Static
 
 
@@ -32,7 +33,6 @@ class NavigationBar(Static):
     }
 
     NavigationBar Button {
-        margin: 0 1;
         height: auto;
     }
 
@@ -56,14 +56,28 @@ class NavigationBar(Static):
 
     def on_mount(self) -> None:
         self.update_active_page()
-        # Keep highlight in sync even when navigation happens via keybindings.
-        self.set_interval(0.25, self.update_active_page)
+
+    def _installed_screen_key_for(self, screen: Screen | None) -> str | None:
+        """Return the installed screen key (e.g. 'home') for a screen instance."""
+        if screen is None:
+            return None
+
+        installed = getattr(self.app, "_installed_screens", None)
+        if not isinstance(installed, dict):
+            return None
+
+        for key, value in installed.items():
+            # Value may be a callable factory in Textual, but in this app it's instances.
+            if value is screen:
+                return str(key)
+        return None
 
     def update_active_page(self) -> None:
         """Highlight the button for the currently active screen."""
-        screen = getattr(self.app, "screen", None)
-        current_name = getattr(screen, "name", None)
-        if not current_name:
+        # `Screen.name` is the widget name; it is often None. We need the installed key
+        # used by `install_screen(..., name="home")`.
+        current_key = self._installed_screen_key_for(getattr(self.app, "screen", None))
+        if not current_key:
             return
 
         for button_id, screen_name in self._BUTTON_TO_SCREEN.items():
@@ -71,7 +85,7 @@ class NavigationBar(Static):
                 button = self.query_one(f"#{button_id}", Button)
             except Exception:
                 continue
-            button.set_class(current_name == screen_name, "active-page")
+            button.set_class(current_key == screen_name, "active-page")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         button_id = event.button.id
@@ -90,6 +104,3 @@ class NavigationBar(Static):
             self.app.switch_screen("create_workload")
         elif button_id == "nav_quit":
             self.app.exit()
-
-        # Best-effort: update the highlight after the screen has switched.
-        self.call_later(self.update_active_page)

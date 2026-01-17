@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
@@ -143,6 +144,13 @@ class CreateWorkloadScreen(Screen[None]):
         # Focus the drafts list for quick keyboard selection.
         try:
             self.query_one("#drafts_list", ListView).focus()
+        except Exception:
+            pass
+
+    def on_screen_resume(self, event: events.ScreenResume) -> None:
+        # Ensure nav highlight is correct immediately when this screen becomes active.
+        try:
+            self.query_one(NavigationBar).update_active_page()
         except Exception:
             pass
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.screen import Screen
@@ -33,3 +34,9 @@ class HomeScreen(Screen[None]):
     def action_create_workload(self) -> None:
         self.app.switch_screen("create_workload")
 
+    def on_screen_resume(self, event: events.ScreenResume) -> None:
+        # Ensure nav highlight is correct immediately when this screen becomes active.
+        try:
+            self.query_one(NavigationBar).update_active_page()
+        except Exception:
+            pass
