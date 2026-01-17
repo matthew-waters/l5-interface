@@ -16,7 +16,8 @@ class CredentialsConfig:
     """User-provided credentials for external services (stored locally)."""
 
     spot_fleet_api_key: str = ""
-    carbon_intensity_api_keys: list[str] = field(default_factory=list)
+    watttime_username: str = ""
+    watttime_password: str = ""
 
     # Placeholder for future AWS-linked credentials / metadata.
     aws: dict[str, str] = field(default_factory=dict)
@@ -47,7 +48,8 @@ class ConfigStore:
 
         return CredentialsConfig(
             spot_fleet_api_key=str(data.get("spot_fleet_api_key", "") or ""),
-            carbon_intensity_api_keys=list(data.get("carbon_intensity_api_keys", []) or []),
+            watttime_username=str(data.get("watttime_username", "") or ""),
+            watttime_password=str(data.get("watttime_password", "") or ""),
             aws=dict(data.get("aws", {}) or {}),
         )
 

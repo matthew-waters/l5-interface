@@ -1,12 +1,11 @@
 """Credentials screen."""
 
 from __future__ import annotations
-from turtle import onclick
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, VerticalScroll
 from textual.screen import Screen
-from textual.widgets import Button, Input, Static, TextArea
+from textual.widgets import Button, Input, Static
 
 from src.storage.config_store import CredentialsConfig
 from src.ui.messages import CredentialsChanged
@@ -15,6 +14,23 @@ from src.ui.widgets.header.global_header import GlobalHeader
 
 class CredentialsScreen(Screen[None]):
     """Collect and persist credentials for external integrations."""
+
+    DEFAULT_CSS = """
+    /* Ensure the scroll area takes the remaining space under the header/title. */
+    #credentials_scroll {
+        height: 1fr;
+    }
+
+    /* Keep cards compact so inputs fit in smaller terminals. */
+    #credentials_scroll .card {
+        height: auto;
+        padding: 1 1;
+    }
+
+    #credentials_scroll Input {
+        width: 1fr;
+    }
+    """
 
     BINDINGS = [
         ("s", "save", "Save"),
@@ -38,16 +54,19 @@ class CredentialsScreen(Screen[None]):
                     password=True,
                 )
 
-            # Carbon Intensity
+            # WattTime (Carbon Intensity)
             with Container(classes="card"):
-                yield Static("Carbon Intensity", classes="section_title")
-                yield Static(
-                    "API keys (one per line). The app will support multiple providers later.",
-                    classes="muted",
+                yield Static("WattTime", classes="section_title")
+                yield Static("Username", classes="muted")
+                yield Input(
+                    id="watttime_username",
+                    placeholder="Enter WattTime username",
                 )
-                yield TextArea(
-                    id="carbon_intensity_api_keys",
-                    text="",
+                yield Static("Password", classes="muted")
+                yield Input(
+                    id="watttime_password",
+                    placeholder="Enter WattTime password",
+                    password=True,
                 )
 
             # AWS (placeholder)
@@ -64,23 +83,24 @@ class CredentialsScreen(Screen[None]):
 
     def on_mount(self) -> None:
         self._load_into_form()
+        # Make scrolling work immediately on smaller terminals.
+        self.query_one("#credentials_scroll", VerticalScroll).focus()
 
     def _load_into_form(self) -> None:
         cfg = getattr(self.app, "storage").config.load_credentials()
         self.query_one("#spot_fleet_api_key", Input).value = cfg.spot_fleet_api_key or ""
-
-        keys_text = "\n".join(k for k in cfg.carbon_intensity_api_keys if k)
-        self.query_one("#carbon_intensity_api_keys", TextArea).text = keys_text
+        self.query_one("#watttime_username", Input).value = cfg.watttime_username or ""
+        self.query_one("#watttime_password", Input).value = cfg.watttime_password or ""
 
     def _read_from_form(self) -> CredentialsConfig:
         spot_key = self.query_one("#spot_fleet_api_key", Input).value.strip()
-
-        keys_raw = self.query_one("#carbon_intensity_api_keys", TextArea).text
-        carbon_keys = [line.strip() for line in keys_raw.splitlines() if line.strip()]
+        watttime_username = self.query_one("#watttime_username", Input).value.strip()
+        watttime_password = self.query_one("#watttime_password", Input).value
 
         return CredentialsConfig(
             spot_fleet_api_key=spot_key,
-            carbon_intensity_api_keys=carbon_keys,
+            watttime_username=watttime_username,
+            watttime_password=watttime_password,
             aws={},
         )
 
