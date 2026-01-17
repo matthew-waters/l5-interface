@@ -10,9 +10,9 @@
   "fleet_region": null,
   "fleet_target_capacities": null,
   "interruptible": null,
-  "name": "",
+  "name": "aaaa",
   "runtime_estimate_seconds": null,
   "runtime_estimate_source": null,
-  "updated_at": "2026-01-17T18:04:56.285927+00:00",
+  "updated_at": "2026-01-17T18:36:45.697298+00:00",
   "version": 1
 }

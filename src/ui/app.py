@@ -60,10 +60,7 @@ class L5InterfaceApp(App[None]):
 
     def action_go_create(self) -> None:
         self.switch_screen("create_workload")
-        screen = self.get_screen("create_workload")
-        start = getattr(screen, "start_new_draft", None)
-        if callable(start):
-            start()
+        # The Create screen now opens in draft-picker mode.
 
     def action_go_timeline(self) -> None:
         self.switch_screen("timeline")

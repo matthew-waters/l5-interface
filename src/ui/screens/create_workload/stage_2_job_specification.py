@@ -27,7 +27,9 @@ class Stage2JobSpecification(CreateWorkloadStage):
                 yield Checkbox("Interruptible (checkpointing supported)", id="interruptible")
                 yield Static("Delay tolerance", classes="muted")
                 yield Select(
-                    options=[(dt.value, dt.label()) for dt in DelayTolerance],
+                    # Textual Select expects (label, value). We want the UI to show the plain-English
+                    # label, but store the stable enum value in the config JSON.
+                    options=[(dt.label(), dt.value) for dt in DelayTolerance],
                     id="delay_tolerance",
                     prompt="Choose delay tolerance…",
                 )
@@ -37,17 +39,23 @@ class Stage2JobSpecification(CreateWorkloadStage):
         self.query_one("#interruptible", Checkbox).value = interruptible
 
         sel = self.query_one("#delay_tolerance", Select)
-        sel.value = config.delay_tolerance.value if config.delay_tolerance is not None else None
+        if config.delay_tolerance is None:
+            sel.clear()
+        else:
+            sel.value = config.delay_tolerance.value
 
     def apply_to_config(self, config: WorkloadConfig) -> WorkloadConfig:
         interruptible = self.query_one("#interruptible", Checkbox).value
         delay_raw = self.query_one("#delay_tolerance", Select).value
-        delay = DelayTolerance(str(delay_raw)) if delay_raw else None
+        if delay_raw is None or delay_raw == Select.BLANK:
+            delay = None
+        else:
+            delay = DelayTolerance(str(delay_raw))
         return replace(config, interruptible=bool(interruptible), delay_tolerance=delay)
 
     def validate(self) -> tuple[bool, str]:
         delay_raw = self.query_one("#delay_tolerance", Select).value
-        if not delay_raw:
+        if delay_raw is None or delay_raw == Select.BLANK:
             return False, "Please choose a delay tolerance."
         return True, ""
 

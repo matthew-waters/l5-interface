@@ -31,8 +31,4 @@ class HomeScreen(Screen[None]):
 
     def action_create_workload(self) -> None:
         self.app.switch_screen("create_workload")
-        screen = self.app.get_screen("create_workload")
-        start = getattr(screen, "start_new_draft", None)
-        if callable(start):
-            start()
 

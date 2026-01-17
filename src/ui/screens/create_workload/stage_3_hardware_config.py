@@ -22,6 +22,7 @@ class Stage3HardwareConfig(CreateWorkloadStage):
         super().__init__(*args, **kwargs)
         self._fleet_details = None
         self._fleet_name_by_id: dict[str, str] = {}
+        self._pending_fleet_id: str | None = None
 
     def compose(self) -> ComposeResult:
         with Container(classes="card"):
@@ -59,12 +60,22 @@ class Stage3HardwareConfig(CreateWorkloadStage):
         )
 
         sel = self.query_one("#fleet_select", Select)
-        sel.value = str(config.fleet_id) if config.fleet_id is not None else None
-        if config.fleet_id is not None:
+        if config.fleet_id is None:
+            # Textual Select doesn't allow setting value to None; use clear().
+            sel.clear()
+            self._pending_fleet_id = None
+            self._render_fleet_metadata(None)
+            return
+
+        # If options aren't loaded yet, setting .value may be illegal; defer until _set_fleet_options.
+        self._pending_fleet_id = str(config.fleet_id)
+        if sel.options:
+            sel.value = self._pending_fleet_id
+            self._pending_fleet_id = None
             # Try to hydrate metadata if the stage is opened later.
             self._load_fleet_details(str(config.fleet_id))
         else:
-            self._render_fleet_metadata(None)
+            self.query_one("#fleet_status", Static).update("Loading fleets…")
 
     def apply_to_config(self, config: WorkloadConfig) -> WorkloadConfig:
         fleet_raw = self.query_one("#fleet_select", Select).value
@@ -137,6 +148,19 @@ class Stage3HardwareConfig(CreateWorkloadStage):
         self.query_one("#fleet_status", Static).update(
             "Select a fleet to view metadata and placement scores."
         )
+
+        # If we were asked to load a saved fleet before options were available, apply it now.
+        if self._pending_fleet_id is not None:
+            try:
+                sel.value = self._pending_fleet_id
+                fleet_id = self._pending_fleet_id
+                self._pending_fleet_id = None
+                self._load_fleet_details(str(fleet_id))
+            except Exception:
+                # If the saved id isn't present, clear selection gracefully.
+                sel.clear()
+                self._pending_fleet_id = None
+                self._render_fleet_metadata(None)
 
     def _set_fleet_error(self, message: str) -> None:
         sel = self.query_one("#fleet_select", Select)

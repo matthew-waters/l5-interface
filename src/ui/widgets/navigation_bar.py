@@ -53,10 +53,6 @@ class NavigationBar(Static):
         elif button_id == "nav_create":
             # Always route to the Create Workload wizard.
             self.app.switch_screen("create_workload")
-            screen = self.app.get_screen("create_workload")
-            start = getattr(screen, "start_new_draft", None)
-            if callable(start):
-                start()
         elif button_id == "nav_quit":
             self.app.exit()
 
