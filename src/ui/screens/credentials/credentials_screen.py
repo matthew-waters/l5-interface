@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, VerticalScroll
 from textual.screen import Screen
-from textual.widgets import Button, Input, Static
+from textual.widgets import Button, Input, Static, Footer
+from textual.binding import Binding
 
 from src.storage.config_store import CredentialsConfig
 from src.ui.messages import CredentialsChanged
 from src.ui.widgets.global_widgets.global_header import GlobalHeader
-from src.ui.widgets.global_widgets.navigation_bar import NavigationBar
 
 
 class CredentialsScreen(Screen[None]):
@@ -34,14 +33,18 @@ class CredentialsScreen(Screen[None]):
         width: 1fr;
     }
     """
-
-    BINDINGS = [
-        ("s", "save", "Save"),
+    SCREEN_CONTROLS = [
+        Binding("s", "save", "Save"),
     ]
+
+    NAVIGATION_CONTROLS = [
+        Binding("h", "go_home", "Home"),
+    ]
+
+    BINDINGS = SCREEN_CONTROLS + NAVIGATION_CONTROLS
 
     def compose(self) -> ComposeResult:
         yield GlobalHeader()
-
 
         with VerticalScroll(id="credentials_scroll"):
             # Spot Fleet
@@ -79,8 +82,8 @@ class CredentialsScreen(Screen[None]):
             with Horizontal(classes="card"):
                 yield Button("(s) Save", id="save_btn", variant="primary")
                 yield Button("Back to Home", id="back_btn")
-
-        yield NavigationBar(id="global_nav")
+                
+        yield Footer()
 
     def on_mount(self) -> None:
         self._load_into_form()
@@ -104,6 +107,9 @@ class CredentialsScreen(Screen[None]):
             watttime_password=watttime_password,
             aws={},
         )
+
+    def action_go_home(self) -> None:
+        self.app.switch_screen("home")
 
     def action_save(self) -> None:
         self._save()

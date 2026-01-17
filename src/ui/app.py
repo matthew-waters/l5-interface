@@ -25,16 +25,6 @@ class L5InterfaceApp(App[None]):
 
     CSS_PATH = "themes/default.tcss"
 
-    BINDINGS = [
-        Binding("h", "go_home", "Home"),
-        Binding("w", "go_workloads", "Workloads"),
-        Binding("c", "go_create", "Create"),
-        Binding("t", "go_timeline", "Timeline"),
-        Binding("e", "go_execution", "Execution"),
-        Binding("r", "go_credentials", "Credentials"),
-        Binding("q", "quit", "Quit"),
-    ]
-
     def on_mount(self) -> None:
         repo_root = Path(__file__).resolve().parents[2]
         self.storage = StorageManager(repo_root / "data")
@@ -48,7 +38,6 @@ class L5InterfaceApp(App[None]):
         self.push_screen("home")
 
     def compose(self) -> ComposeResult:
-        # No widgets at app level - all widgets are in screens
         yield from ()
 
     def on_credentials_changed(self, message: CredentialsChanged) -> None:

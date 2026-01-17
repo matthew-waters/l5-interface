@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, ListItem, ListView, Static
+from textual.widgets import Button, ListItem, ListView, Static, Footer
+from textual.binding import Binding
 
 from src.models.workload_config import WorkloadConfig
 from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, StageId
@@ -14,7 +14,6 @@ from src.ui.screens.create_workload.stage_1_workload_creation import Stage1Workl
 from src.ui.screens.create_workload.stage_2_job_specification import Stage2JobSpecification
 from src.ui.screens.create_workload.stage_3_hardware_config import Stage3HardwareConfig
 from src.ui.widgets.global_widgets.global_header import GlobalHeader
-from src.ui.widgets.global_widgets.navigation_bar import NavigationBar
 
 
 class CreateWorkloadScreen(Screen[None]):
@@ -89,12 +88,19 @@ class CreateWorkloadScreen(Screen[None]):
     }
     """
 
-    BINDINGS = [
-        ("ctrl+s", "save", "Save"),
-        ("ctrl+n", "new_draft", "New draft"),
-        ("left", "back", "Back"),
-        ("right", "next", "Next"),
+    SCREEN_CONTROLS = [
+        Binding("ctrl+s", "save", "Save"),
+        Binding("ctrl+n", "new_draft", "New draft"),
+        Binding("left", "back", "Back"),
+        Binding("right", "next", "Next"),
     ]
+
+    NAVIGATION_CONTROLS = [
+        Binding("h", "go_home", "Home"),
+        Binding("q", "quit", "Quit"),
+    ]        
+
+    BINDINGS = SCREEN_CONTROLS + NAVIGATION_CONTROLS
 
     def __init__(self) -> None:
         super().__init__()
@@ -132,7 +138,7 @@ class CreateWorkloadScreen(Screen[None]):
                 yield Static("2.3 Hardware", id="step_hardware", classes="step")
             yield Static("", id="footer_status", classes="muted")
 
-        yield NavigationBar(id="global_nav")
+        yield Footer()
 
     def on_mount(self) -> None:
         self._refresh_drafts_list()
@@ -157,6 +163,9 @@ class CreateWorkloadScreen(Screen[None]):
         self._new_draft()
 
     # --- Actions / events ---
+    def action_go_home(self) -> None:
+        self.app.switch_screen("home")
+
     def action_new_draft(self) -> None:
         self._new_draft()
 

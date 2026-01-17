@@ -34,10 +34,3 @@ Screen {
   height: 100%;
 }
 
-#global_nav {
-  dock: bottom;
-  height: auto;
-  border: none;
-  border-top: wide $primary;
-  background: $surface;
-}

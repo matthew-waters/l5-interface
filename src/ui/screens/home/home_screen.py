@@ -6,10 +6,11 @@ from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.screen import Screen
+from textual.widgets import Footer
+from textual.binding import Binding
 
 from src.ui.widgets.carbon_snapshot import CarbonSnapshot
 from src.ui.widgets.global_widgets.global_header import GlobalHeader
-from src.ui.widgets.global_widgets.navigation_bar import NavigationBar
 from src.ui.widgets.system_timeline import SystemTimeline
 from src.ui.widgets.workload_card import UpcomingWorkloads
 
@@ -20,7 +21,13 @@ class HomeScreen(Screen[None]):
     HEADER_TITLE = "Home"
 
     BINDINGS = [
-        ("c", "create_workload", "Create"),
+        Binding("h", "go_home", "Home"),
+        Binding("w", "go_workloads", "Workloads"),
+        Binding("c", "go_create", "Create"),
+        Binding("t", "go_timeline", "Timeline"),
+        Binding("e", "go_execution", "Execution"),
+        Binding("r", "go_credentials", "Credentials"),
+        Binding("q", "quit", "Quit"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -29,7 +36,22 @@ class HomeScreen(Screen[None]):
             yield UpcomingWorkloads(classes="card")
             yield CarbonSnapshot(classes="card")
             yield SystemTimeline(classes="card")
-        yield NavigationBar(id="global_nav")
+        yield Footer()
 
-    def action_create_workload(self) -> None:
+    def action_go_home(self) -> None:
+        self.app.switch_screen("home")
+
+    def action_go_workloads(self) -> None:
+        self.app.switch_screen("workloads")
+
+    def action_go_create(self) -> None:
         self.app.switch_screen("create_workload")
+
+    def action_go_timeline(self) -> None:
+        self.app.switch_screen("timeline")
+
+    def action_go_execution(self) -> None:
+        self.app.switch_screen("execution")
+
+    def action_go_credentials(self) -> None:
+        self.app.switch_screen("credentials")
