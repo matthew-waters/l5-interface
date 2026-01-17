@@ -30,6 +30,9 @@ class HomeScreen(Screen[None]):
         yield NavigationBar(id="home_nav")
 
     def action_create_workload(self) -> None:
-        getattr(self.app, "storage").workloads.create_draft("New workload")
-        self.app.switch_screen("workloads")
+        self.app.switch_screen("create_workload")
+        screen = self.app.get_screen("create_workload")
+        start = getattr(screen, "start_new_draft", None)
+        if callable(start):
+            start()
 

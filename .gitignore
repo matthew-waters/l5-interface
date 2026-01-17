@@ -16,9 +16,7 @@ build/
 Thumbs.db
 
 # App data (runtime)
-data/workloads/*.json
-data/configs/*.json
-data/profiles/*.json
+data/
 
 *.env
 

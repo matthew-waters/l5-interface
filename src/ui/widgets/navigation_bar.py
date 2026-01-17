@@ -51,14 +51,12 @@ class NavigationBar(Static):
         elif button_id == "nav_credentials":
             self.app.switch_screen("credentials")
         elif button_id == "nav_create":
-            # This action is screen-specific (currently implemented on HomeScreen).
-            action = getattr(self.app.screen, "action_create_workload", None)
-            if callable(action):
-                action()
-            else:
-                notify = getattr(self.app, "notify", None)
-                if callable(notify):
-                    notify("Create action not available on this screen.", severity="warning")
+            # Always route to the Create Workload wizard.
+            self.app.switch_screen("create_workload")
+            screen = self.app.get_screen("create_workload")
+            start = getattr(screen, "start_new_draft", None)
+            if callable(start):
+                start()
         elif button_id == "nav_quit":
             self.app.exit()
 

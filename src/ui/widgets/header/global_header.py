@@ -122,7 +122,12 @@ class GlobalHeader(Static):
 
     def _set_refreshing(self, refreshing: bool) -> None:
         self.refreshing_freshness = refreshing
-        spinner = self.query_one("#freshness_spinner", LoadingIndicator)
+        try:
+            spinner = self.query_one("#freshness_spinner", LoadingIndicator)
+        except Exception:
+            # If the widget isn't fully composed/mounted yet (or mounting was interrupted),
+            # avoid crashing the whole app; the next refresh will reconcile state.
+            return
         if refreshing:
             spinner.remove_class("hidden")
         else:

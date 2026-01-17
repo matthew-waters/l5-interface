@@ -1,0 +1,18 @@
+{
+  "config_id": "bfdfef9d-b855-43e5-9d59-8608fb5ba662",
+  "created_at": "2026-01-17T18:01:43.965339+00:00",
+  "delay_tolerance": null,
+  "description": "Example description",
+  "fleet_id": null,
+  "fleet_instance_types": null,
+  "fleet_metadata": null,
+  "fleet_name": null,
+  "fleet_region": null,
+  "fleet_target_capacities": null,
+  "interruptible": null,
+  "name": "Example Name",
+  "runtime_estimate_seconds": null,
+  "runtime_estimate_source": null,
+  "updated_at": "2026-01-17T18:02:12.126048+00:00",
+  "version": 1
+}

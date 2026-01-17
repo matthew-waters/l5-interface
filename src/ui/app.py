@@ -10,6 +10,7 @@ from textual.binding import Binding
 from src.storage.storage_manager import StorageManager
 from src.ui.messages import CredentialsChanged
 from src.ui.screens.credentials.credentials_screen import CredentialsScreen
+from src.ui.screens.create_workload.create_workload_screen import CreateWorkloadScreen
 from src.ui.screens.execution_overview.execution_overview_screen import ExecutionOverviewScreen
 from src.ui.screens.home.home_screen import HomeScreen
 from src.ui.screens.global_timeline.timeline_screen import TimelineScreen
@@ -28,6 +29,7 @@ class L5InterfaceApp(App[None]):
     BINDINGS = [
         Binding("h", "go_home", "Home"),
         Binding("w", "go_workloads", "Workloads"),
+        Binding("c", "go_create", "Create"),
         Binding("t", "go_timeline", "Timeline"),
         Binding("e", "go_execution", "Execution"),
         Binding("r", "go_credentials", "Credentials"),
@@ -39,6 +41,7 @@ class L5InterfaceApp(App[None]):
         self.storage = StorageManager(repo_root / "data")
 
         self.install_screen(HomeScreen(), name="home")
+        self.install_screen(CreateWorkloadScreen(), name="create_workload")
         self.install_screen(CredentialsScreen(), name="credentials")
         self.install_screen(WorkloadsListScreen(), name="workloads")
         self.install_screen(TimelineScreen(), name="timeline")
@@ -54,6 +57,13 @@ class L5InterfaceApp(App[None]):
 
     def action_go_workloads(self) -> None:
         self.switch_screen("workloads")
+
+    def action_go_create(self) -> None:
+        self.switch_screen("create_workload")
+        screen = self.get_screen("create_workload")
+        start = getattr(screen, "start_new_draft", None)
+        if callable(start):
+            start()
 
     def action_go_timeline(self) -> None:
         self.switch_screen("timeline")
