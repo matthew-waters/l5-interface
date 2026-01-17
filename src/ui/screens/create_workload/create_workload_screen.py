@@ -96,8 +96,6 @@ class CreateWorkloadScreen(Screen[None]):
     ]
 
     NAVIGATION_CONTROLS = [
-        Binding("h", "go_home", "Home"),
-        Binding("q", "quit", "Quit"),
     ]        
 
     BINDINGS = SCREEN_CONTROLS + NAVIGATION_CONTROLS
@@ -138,7 +136,7 @@ class CreateWorkloadScreen(Screen[None]):
                 yield Static("2.3 Hardware", id="step_hardware", classes="step")
             yield Static("", id="footer_status", classes="muted")
 
-        yield Footer()
+        yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
         self._refresh_drafts_list()

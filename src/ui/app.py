@@ -25,6 +25,11 @@ class L5InterfaceApp(App[None]):
 
     CSS_PATH = "themes/default.tcss"
 
+    BINDINGS = [
+        Binding("h", "go_home", "Home"),
+        Binding("q", "quit", "Quit"),
+    ]
+
     def on_mount(self) -> None:
         repo_root = Path(__file__).resolve().parents[2]
         self.storage = StorageManager(repo_root / "data")
@@ -50,3 +55,5 @@ class L5InterfaceApp(App[None]):
             header.update_freshness()
 
 
+    def action_go_home(self) -> None:
+        self.switch_screen("home")

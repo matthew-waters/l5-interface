@@ -14,18 +14,8 @@ class WorkloadsListScreen(Screen[None]):
     """Unified list for drafts/scheduled/executing/completed workloads."""
     HEADER_TITLE = "Workloads"
 
-    SCREEN_CONTROLS = [
-    ]
-
-    NAVIGATION_CONTROLS = [
-        Binding("h", "go_home", "Home"),
-        Binding("q", "quit", "Quit"),
-    ]  
+    BINDINGS = []
 
     def compose(self) -> ComposeResult:
         yield GlobalHeader()
-
-        yield Footer()
-
-    def action_go_home(self) -> None:
-            self.app.switch_screen("home")
+        yield Footer(show_command_palette=False)

@@ -14,17 +14,8 @@ class TimelineScreen(Screen[None]):
     """Full system timeline view (placeholder)."""
     HEADER_TITLE = "Timeline"
 
-    SCREEN_CONTROLS = [
-    ]
-
-    NAVIGATION_CONTROLS = [
-        Binding("h", "go_home", "Home"),
-        Binding("q", "quit", "Quit"),
-    ]  
+    BINDINGS = []
 
     def compose(self) -> ComposeResult:
         yield GlobalHeader()
-        yield Footer()
-
-    def action_go_home(self) -> None:
-        self.app.switch_screen("home")
+        yield Footer(show_command_palette=False)

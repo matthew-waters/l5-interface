@@ -33,15 +33,10 @@ class CredentialsScreen(Screen[None]):
         width: 1fr;
     }
     """
-    SCREEN_CONTROLS = [
+
+    BINDINGS = [
         Binding("s", "save", "Save"),
     ]
-
-    NAVIGATION_CONTROLS = [
-        Binding("h", "go_home", "Home"),
-    ]
-
-    BINDINGS = SCREEN_CONTROLS + NAVIGATION_CONTROLS
 
     def compose(self) -> ComposeResult:
         yield GlobalHeader()
@@ -83,7 +78,7 @@ class CredentialsScreen(Screen[None]):
                 yield Button("(s) Save", id="save_btn", variant="primary")
                 yield Button("Back to Home", id="back_btn")
                 
-        yield Footer()
+        yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
         self._load_into_form()
@@ -107,9 +102,6 @@ class CredentialsScreen(Screen[None]):
             watttime_password=watttime_password,
             aws={},
         )
-
-    def action_go_home(self) -> None:
-        self.app.switch_screen("home")
 
     def action_save(self) -> None:
         self._save()

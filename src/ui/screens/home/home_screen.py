@@ -21,13 +21,11 @@ class HomeScreen(Screen[None]):
     HEADER_TITLE = "Home"
 
     BINDINGS = [
-        Binding("h", "go_home", "Home"),
         Binding("w", "go_workloads", "Workloads"),
         Binding("c", "go_create", "Create"),
         Binding("t", "go_timeline", "Timeline"),
         Binding("e", "go_execution", "Execution"),
         Binding("r", "go_credentials", "Credentials"),
-        Binding("q", "quit", "Quit"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -36,10 +34,7 @@ class HomeScreen(Screen[None]):
             yield UpcomingWorkloads(classes="card")
             yield CarbonSnapshot(classes="card")
             yield SystemTimeline(classes="card")
-        yield Footer()
-
-    def action_go_home(self) -> None:
-        self.app.switch_screen("home")
+        yield Footer(show_command_palette=False)
 
     def action_go_workloads(self) -> None:
         self.app.switch_screen("workloads")
