@@ -17,6 +17,7 @@ from src.ui.widgets.header.global_header import GlobalHeader
 
 class CreateWorkloadScreen(Screen[None]):
     """Staged workflow for defining and preparing a workload."""
+    HEADER_TITLE = "Create Workload"
 
     DEFAULT_CSS = """
     CreateWorkloadScreen {
@@ -103,8 +104,6 @@ class CreateWorkloadScreen(Screen[None]):
     # --- UI ---
     def compose(self) -> ComposeResult:
         yield GlobalHeader()
-        yield Static("Create Workload", classes="section_title")
-        yield Static("Stages 2.1–2.3 (drafts are stored separately).", classes="muted")
 
         with Horizontal(id="wizard_body"):
             with Vertical(id="drafts_panel"):

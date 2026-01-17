@@ -14,6 +14,7 @@ from src.ui.widgets.header.global_header import GlobalHeader
 
 class CredentialsScreen(Screen[None]):
     """Collect and persist credentials for external integrations."""
+    HEADER_TITLE = "Credentials"
 
     DEFAULT_CSS = """
     /* Ensure the scroll area takes the remaining space under the header/title. */

@@ -11,6 +11,7 @@ from src.ui.widgets.header.global_header import GlobalHeader
 
 class ExecutionOverviewScreen(Screen[None]):
     """Execution overview for a selected workload (placeholder)."""
+    HEADER_TITLE = "Execution"
 
     def compose(self) -> ComposeResult:
         yield GlobalHeader()

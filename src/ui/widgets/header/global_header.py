@@ -77,11 +77,12 @@ class GlobalHeader(Static):
         """Initialize the global header."""
         super().__init__(*args, **kwargs)
         self._freshness_tracker = get_freshness_tracker()
+        self._last_screen_title: str | None = None
 
     def compose(self) -> ComposeResult:
         """Compose the header layout."""
         with Horizontal(classes="global-header"):
-            yield Static("Scheduling System", classes="app-name")
+            yield Static("Loading…", id="screen_title", classes="app-name")
             with Horizontal(classes="right-section"):
                 yield Static("00:00:00", id="time_display", classes="time")
                 yield Static("NESO: N/A | WT: N/A | Fleet: N/A", id="freshness_display", classes="freshness")
@@ -93,12 +94,36 @@ class GlobalHeader(Static):
     def on_mount(self) -> None:
         """Set up periodic updates when widget is mounted."""
         self.update_time()
+        self.update_screen_title()
 
         self.set_timer(0.1, self._initial_refresh)
 
+        # Keep the header title in sync with navigation.
+        self.set_interval(0.25, self.update_screen_title)
         self.set_interval(1.0, self.update_time)
         self.set_interval(5.0, self.update_freshness)  # Update freshness display every 5 seconds
         self.set_interval(60.0, self._refresh_freshness_from_api)  # Check API every 60 seconds
+
+    def update_screen_title(self) -> None:
+        """Update the left-hand title to reflect the current screen."""
+        try:
+            screen = getattr(self.app, "screen", None)
+            if screen is None:
+                title = "Scheduling System"
+            else:
+                title = (
+                    getattr(screen, "HEADER_TITLE", None)
+                    or getattr(screen, "title", None)
+                    or screen.__class__.__name__
+                )
+                title = str(title)
+
+            if title != self._last_screen_title:
+                self._last_screen_title = title
+                self.query_one("#screen_title", Static).update(title)
+        except Exception:
+            # Best-effort; never crash header due to navigation/title issues.
+            return
 
     def _initial_refresh(self) -> None:
         """Run the first freshness refresh after the UI has mounted."""

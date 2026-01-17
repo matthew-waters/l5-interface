@@ -11,6 +11,7 @@ from src.ui.widgets.header.global_header import GlobalHeader
 
 class TimelineScreen(Screen[None]):
     """Full system timeline view (placeholder)."""
+    HEADER_TITLE = "Timeline"
 
     def compose(self) -> ComposeResult:
         yield GlobalHeader()

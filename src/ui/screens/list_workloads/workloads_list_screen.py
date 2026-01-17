@@ -14,6 +14,7 @@ from src.ui.widgets.header.global_header import GlobalHeader
 
 class WorkloadsListScreen(Screen[None]):
     """Unified list for drafts/scheduled/executing/completed workloads."""
+    HEADER_TITLE = "Workloads"
 
     BINDINGS = [
         ("a", "sort_status", "Sort status"),

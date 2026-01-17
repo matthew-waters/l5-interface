@@ -16,6 +16,7 @@ from textual import log
 
 class HomeScreen(Screen[None]):
     """Status dashboard + navigation hub."""
+    HEADER_TITLE = "Home"
 
     BINDINGS = [
         ("c", "create_workload", "Create"),
