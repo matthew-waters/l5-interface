@@ -9,8 +9,8 @@ from textual.screen import Screen
 from textual.widgets import DataTable, Static
 
 from src.models.workload import Workload, WorkloadStatus
-from src.ui.widgets.header.global_header import GlobalHeader
-from src.ui.widgets.navigation_bar import NavigationBar
+from src.ui.widgets.global_widgets.global_header import GlobalHeader
+from src.ui.widgets.global_widgets.navigation_bar import NavigationBar
 
 
 class WorkloadsListScreen(Screen[None]):

@@ -12,8 +12,8 @@ from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, Stage
 from src.ui.screens.create_workload.stage_1_workload_creation import Stage1WorkloadCreation
 from src.ui.screens.create_workload.stage_2_job_specification import Stage2JobSpecification
 from src.ui.screens.create_workload.stage_3_hardware_config import Stage3HardwareConfig
-from src.ui.widgets.header.global_header import GlobalHeader
-from src.ui.widgets.navigation_bar import NavigationBar
+from src.ui.widgets.global_widgets.global_header import GlobalHeader
+from src.ui.widgets.global_widgets.navigation_bar import NavigationBar
 
 
 class CreateWorkloadScreen(Screen[None]):

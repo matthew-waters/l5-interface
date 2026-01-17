@@ -9,8 +9,8 @@ from textual.widgets import Button, Input, Static
 
 from src.storage.config_store import CredentialsConfig
 from src.ui.messages import CredentialsChanged
-from src.ui.widgets.header.global_header import GlobalHeader
-from src.ui.widgets.navigation_bar import NavigationBar
+from src.ui.widgets.global_widgets.global_header import GlobalHeader
+from src.ui.widgets.global_widgets.navigation_bar import NavigationBar
 
 
 class CredentialsScreen(Screen[None]):
