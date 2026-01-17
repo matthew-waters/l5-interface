@@ -81,7 +81,12 @@ class Stage3HardwareConfig(CreateWorkloadStage):
         fleet_raw = self.query_one("#fleet_select", Select).value
         runtime_minutes_raw = self.query_one("#runtime_minutes", Input).value.strip()
 
-        fleet_id = int(fleet_raw) if fleet_raw else None
+        # Textual Select uses a sentinel for "no selection" (Select.BLANK / NoSelection).
+        fleet_id = (
+            int(fleet_raw)
+            if fleet_raw not in (None, "", Select.BLANK)
+            else None
+        )
         runtime_seconds = int(runtime_minutes_raw) * 60 if runtime_minutes_raw else None
 
         fleet = self._fleet_details

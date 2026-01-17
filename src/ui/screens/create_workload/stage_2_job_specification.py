@@ -16,14 +16,15 @@ class Stage2JobSpecification(CreateWorkloadStage):
     stage_id = StageId.JOB
     title = "2.2 Job Specification"
 
+    DEFAULT_CSS = """
+    .JobSpecContainer {
+        padding: 1 1;
+    }
+    """
+
     def compose(self) -> ComposeResult:
-        with Container(classes="card"):
-            yield Static("Job configuration", classes="section_title")
+        with Container(classes="JobSpecContainer"):
             with Vertical():
-                yield Static(
-                    "We only capture high-level scheduling-relevant options here for now.",
-                    classes="muted",
-                )
                 yield Checkbox("Interruptible (checkpointing supported)", id="interruptible")
                 yield Static("Delay tolerance", classes="muted")
                 yield Select(

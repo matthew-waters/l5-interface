@@ -17,13 +17,13 @@ class Stage1WorkloadCreation(CreateWorkloadStage):
     title = "2.1 Workload Creation"
 
     DEFAULT_CSS = """
-    .WorkloadDetails {
+    .WorkloadCreationContainer {
         padding: 1 1;
     }
     """
 
     def compose(self) -> ComposeResult:
-        with Container(classes="WorkloadDetails"):
+        with Container(classes="WorkloadCreationContainer"):
             with Vertical():
                 yield Static("Name", classes="muted")
                 yield Input(id="name", placeholder="e.g. Train model v2")

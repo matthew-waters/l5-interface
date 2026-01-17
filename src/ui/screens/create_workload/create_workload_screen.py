@@ -7,9 +7,17 @@ from datetime import datetime
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, DataTable, Footer, Static, TabbedContent, TabPane
+from textual.widgets import (
+    Button,
+    DataTable,
+    Footer,
+    Input,
+    Static,
+    TabbedContent,
+    TabPane,
+    TextArea,
+)
 from textual.binding import Binding
-from textual.widgets._tabbed_content import ContentTabs
 
 from src.models.workload_config import WorkloadConfig
 from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, StageId
@@ -78,14 +86,7 @@ class CreateWorkloadScreen(Screen[None]):
         Binding("ctrl+s", "save", "Save"),
         Binding("ctrl+n", "new_draft", "New workload"),
         Binding("r", "refresh_drafts", "Refresh drafts"),
-        # Arrow keys get consumed by Input/TextArea for cursor movement; provide
-        # alternatives that work while typing.
-        Binding("ctrl+pageup", "back", "Back"),
-        Binding("ctrl+pagedown", "next", "Next"),
-        Binding("alt+left", "back", "Back"),
-        Binding("alt+right", "next", "Next"),
-        Binding("left", "back", "Back", show=False),
-        Binding("right", "next", "Next", show=False),
+        Binding("escape", "exit_to_drafts", "Drafts"),
     ]
 
     NAVIGATION_CONTROLS = [
@@ -99,7 +100,7 @@ class CreateWorkloadScreen(Screen[None]):
         self._stage_id: StageId = StageId.WORKLOAD
         self._start_new_draft_on_mount: bool = False
         self._editing: bool = False
-        self._enabled_stage_ids: set[StageId] = {StageId.WORKLOAD}
+        self._status_clear_timer = None
 
     # --- UI ---
     def compose(self) -> ComposeResult:
@@ -149,11 +150,31 @@ class CreateWorkloadScreen(Screen[None]):
     def action_refresh_drafts(self) -> None:
         self._refresh_drafts_list()
 
-    def action_back(self) -> None:
-        self._go_back()
+    def action_exit_to_drafts(self) -> None:
+        self._exit_to_drafts()
 
-    def action_next(self) -> None:
-        self._go_next()
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        """Conditionally enable/hide actions based on focus.
+
+        Returning False means the action is disabled and not shown in the Footer.
+        """
+        if action in {"save", "new_draft", "refresh_drafts"}:
+            # Only show "new workload" + "refresh drafts" on the drafts list.
+            if action in {"new_draft", "refresh_drafts"} and self._editing:
+                return False
+
+            focused = getattr(self.app, "focused", None)
+            if isinstance(focused, (Input, TextArea)):
+                # While typing, treat the input as modal: hide/disable screen bindings
+                # to match the Credentials screen behavior (Footer shows none).
+                return False
+            return True
+
+        if action == "exit_to_drafts":
+            # Always allow leaving the editor back to the drafts table.
+            return True
+
+        return None
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         match event.button.id:
@@ -235,9 +256,8 @@ class CreateWorkloadScreen(Screen[None]):
         self._set_mode(editing=True)
         self._config = self._repo.create_draft()
         self._stage_id = StageId.WORKLOAD
-        self._enabled_stage_ids = {StageId.WORKLOAD}
         self._refresh_drafts_list()
-        self._sync_tabs_from_state()
+        self._set_active_tab(StageId.WORKLOAD)
         self._ensure_stage_mounted(StageId.WORKLOAD)
         self._set_footer_status("Created new draft.")
 
@@ -248,9 +268,8 @@ class CreateWorkloadScreen(Screen[None]):
             return
         self._set_mode(editing=True)
         self._config = cfg
-        self._enabled_stage_ids = self._infer_enabled_stages(cfg)
         self._stage_id = StageId.WORKLOAD
-        self._sync_tabs_from_state()
+        self._set_active_tab(StageId.WORKLOAD)
         self._ensure_stage_mounted(StageId.WORKLOAD)
         self._set_footer_status("Loaded draft.")
 
@@ -268,57 +287,40 @@ class CreateWorkloadScreen(Screen[None]):
         self._refresh_drafts_list()
         self._set_footer_status("Saved.")
 
-    def _go_back(self) -> None:
+    def _exit_to_drafts(self) -> None:
+        """Return to the drafts table view."""
         if not self._editing:
             return
-        if self._stage_id == StageId.WORKLOAD:
-            # Return to draft picker (without forcing the config panel to show).
-            self._save_current()
-            self._set_mode(editing=False)
-            self._set_footer_status("Pick a draft or create a new one.")
-            self._focus_drafts_table()
-            return
-        self._stage_id = StageId(self._stage_id - 1)
-        self._sync_tabs_from_state()
-        self._ensure_stage_mounted(self._stage_id)
-
-    def _go_next(self) -> None:
-        if not self._editing:
-            self._set_footer_status("Select a draft or create a new one first.")
-            return
-        if self._config is None:
-            self._set_footer_status("Create or select a draft first.")
-            return
-
-        stage = self._active_stage()
-        if stage is None:
-            return
-
-        ok, msg = stage.validate()
-        if not ok:
-            notify = getattr(self.app, "notify", None)
-            if callable(notify):
-                notify(msg, severity="warning")
-            self._set_footer_status(msg)
-            return
-
-        # Apply changes and persist before advancing.
         self._save_current()
+        self._set_mode(editing=False)
+        self._set_footer_status("Pick a draft or create a new one.")
+        self._focus_drafts_table()
 
-        if self._stage_id == StageId.HARDWARE:
-            self._set_footer_status("Stage 2.3 complete (scheduling comes next).")
-            return
+    def _clear_status_line(self) -> None:
+        try:
+            self.query_one("#status_line", Static).update("")
+        except Exception:
+            pass
 
-        self._stage_id = StageId(self._stage_id + 1)
-        self._enabled_stage_ids.add(self._stage_id)
-        self._sync_tabs_from_state()
-        self._ensure_stage_mounted(self._stage_id)
-
-    def _set_footer_status(self, text: str) -> None:
+    def _set_footer_status(self, text: str, *, auto_clear_seconds: float | None = 3.0) -> None:
         try:
             self.query_one("#status_line", Static).update(text)
         except Exception:
             pass
+
+        # Cancel any previous auto-clear timer.
+        if self._status_clear_timer is not None:
+            try:
+                self._status_clear_timer.stop()
+            except Exception:
+                pass
+            self._status_clear_timer = None
+
+        if not text or auto_clear_seconds is None:
+            return
+
+        # Clear after a short delay so status messages don't linger indefinitely.
+        self._status_clear_timer = self.set_timer(auto_clear_seconds, self._clear_status_line)
 
     # --- Stage orchestration ---
     def _active_stage(self) -> CreateWorkloadStage | None:
@@ -341,14 +343,6 @@ class CreateWorkloadScreen(Screen[None]):
             self.remove_class("editing")
             self.add_class("picking")
 
-    def _infer_enabled_stages(self, cfg: WorkloadConfig) -> set[StageId]:
-        enabled: set[StageId] = {StageId.WORKLOAD}
-        if cfg.name.strip():
-            enabled.add(StageId.JOB)
-        if StageId.JOB in enabled and cfg.delay_tolerance is not None:
-            enabled.add(StageId.HARDWARE)
-        return enabled
-
     def _stage_id_to_pane_id(self, stage_id: StageId) -> str:
         return {
             StageId.WORKLOAD: "workload",
@@ -363,38 +357,16 @@ class CreateWorkloadScreen(Screen[None]):
             "hardware": StageId.HARDWARE,
         }[pane_id]
 
-    def _sync_tabs_from_state(self) -> None:
-        # Ensure TabbedContent reflects current stage + gating.
+    def _set_active_tab(self, stage_id: StageId) -> None:
         tabbed = self.query_one("#stage_tabs", TabbedContent)
-        content_tabs = tabbed.query_one(ContentTabs)
-        for sid in (StageId.WORKLOAD, StageId.JOB, StageId.HARDWARE):
-            pane_id = self._stage_id_to_pane_id(sid)
-            if sid in self._enabled_stage_ids:
-                try:
-                    content_tabs.enable(pane_id)
-                except Exception:
-                    pass
-            else:
-                try:
-                    content_tabs.disable(pane_id)
-                except Exception:
-                    pass
-
-        tabbed.active = self._stage_id_to_pane_id(self._stage_id)
+        tabbed.active = self._stage_id_to_pane_id(stage_id)
 
     def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated) -> None:
-        # Keep stage_id in sync; don't allow activating disabled tabs (gating).
+        # Keep stage_id in sync and lazily mount stage widget content.
         pane_id = event.pane.id or ""
         if not pane_id:
             return
         stage_id = self._pane_id_to_stage_id(pane_id)
-        if stage_id not in self._enabled_stage_ids:
-            # Revert to current allowed stage.
-            try:
-                event.tabbed_content.active = self._stage_id_to_pane_id(self._stage_id)
-            except Exception:
-                pass
-            return
         self._stage_id = stage_id
         self._ensure_stage_mounted(stage_id)
 
