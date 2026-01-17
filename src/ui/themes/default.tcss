@@ -37,6 +37,6 @@ Screen {
 #home_nav {
   dock: bottom;
   height: auto;
-  border: solid $panel;
-  padding: 1 2;
+  border: none;
+  border-top: solid $panel;
 }

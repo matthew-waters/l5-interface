@@ -13,7 +13,6 @@ class NavigationBar(Static):
     DEFAULT_CSS = """
     NavigationBar {
         width: 100%;
-        height: auto;
     }
 
     NavigationBar HorizontalScroll {
@@ -30,13 +29,13 @@ class NavigationBar(Static):
 
     def compose(self) -> ComposeResult:
         with HorizontalScroll():
-            yield Button("(h) Home", id="nav_home", variant="default")
-            yield Button("(w) Workloads", id="nav_workloads", variant="default")
-            yield Button("(t) Timeline", id="nav_timeline", variant="default")
-            yield Button("(e) Execution", id="nav_execution", variant="default")
-            yield Button("(r) Credentials", id="nav_credentials", variant="default")
-            yield Button("(c) Create", id="nav_create", variant="primary")
-            yield Button("(q) Quit", id="nav_quit", variant="error")
+            yield Button("(h) Home", id="nav_home", variant="default", flat=True)
+            yield Button("(w) Workloads", id="nav_workloads", variant="default", flat=True)
+            yield Button("(t) Timeline", id="nav_timeline", variant="default", flat=True)
+            yield Button("(e) Execution", id="nav_execution", variant="default", flat=True)
+            yield Button("(r) Credentials", id="nav_credentials", variant="default", flat=True)
+            yield Button("(c) Create", id="nav_create", variant="primary", flat=True)
+            yield Button("(q) Quit", id="nav_quit", variant="error", flat=True)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         button_id = event.button.id
