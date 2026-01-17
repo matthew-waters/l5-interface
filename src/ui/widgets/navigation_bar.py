@@ -19,7 +19,7 @@ class NavigationBar(Static):
 
     def compose(self) -> ComposeResult:
         yield Static(
-            "[bold](h)[/bold] home  [bold](w)[/bold] workloads  [bold](t)[/bold] timeline  [bold](e)[/bold] execution  [bold](c)[/bold] create  [bold](r)[/bold] credentials  [bold](q)[/bold] quit",
+            "[bold](h)[/bold] home  [bold](w)[/bold] view workloads  [bold](t)[/bold] timeline  [bold](e)[/bold] execution  [bold](c)[/bold] new  workload  [bold](r)[/bold] credentials  [bold](q)[/bold] quit",
             classes="muted",
         )
 

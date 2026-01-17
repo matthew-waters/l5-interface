@@ -14,17 +14,24 @@ Screen {
 
 #home_grid {
   layout: grid;
-  /* 2 columns x 2 rows so 3 "cards" are visible (the 3rd goes on row 2). */
-  grid-size: 2 2;
-  grid-columns: 1fr 1fr;
-  grid-rows: auto auto;
+  /* 3 cards across; cards should size to content (not stretch to full height). */
+  grid-size: 1 4;
+  grid-columns: 1fr;
+  grid-rows: auto;
   grid-gutter: 1 2;
-  overflow-y: auto;
+  align: left top;
 }
 
 .card {
   border: solid $panel;
   padding: 1 2;
+}
+
+/* Prevent inner layout containers from expanding and making cards tall. */
+.card Vertical,
+.card Horizontal,
+.card Container {
+  height: 100%;
 }
 
 #home_nav {
