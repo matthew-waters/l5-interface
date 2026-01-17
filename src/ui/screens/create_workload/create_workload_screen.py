@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, ListItem, ListView, Static, Footer
+from textual.widgets import Button, DataTable, Footer, Static, TabbedContent, TabPane
 from textual.binding import Binding
+from textual.widgets._tabbed_content import ContentTabs
 
 from src.models.workload_config import WorkloadConfig
 from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, StageId
@@ -31,68 +34,58 @@ class CreateWorkloadScreen(Screen[None]):
         height: 1fr;
     }
 
-    /* Draft picker mode: list takes full width; hide stage editor. */
-    CreateWorkloadScreen.picking #drafts_panel {
-        width: 1fr;
-        min-width: 28;
-    }
-
-    CreateWorkloadScreen.picking #stage_panel {
-        display: none;
-    }
-
-    /* Editing mode: show split layout. */
-    CreateWorkloadScreen.editing #drafts_panel {
-        display: none;
-    }
-
-    CreateWorkloadScreen.editing #stage_panel {
-        display: block;
-        width: 1fr;
-    }
-
     CreateWorkloadScreen #drafts_panel {
-        width: 40;
-        min-width: 28;
-        border: solid $panel;
+        width: 1fr;
         padding: 1 1;
     }
 
     CreateWorkloadScreen #stage_panel {
         width: 1fr;
-        border: solid $panel;
+        height: 1fr;
         padding: 1 2;
     }
 
-    CreateWorkloadScreen #wizard_footer {
-        /* Textual CSS doesn't consistently support `height: auto` for containers. */
-        height: 4;
-        border-top: solid $panel;
+    /* Ensure tab content has space; TabbedContent defaults to height:auto. */
+    CreateWorkloadScreen #stage_tabs {
+        height: 1fr;
+    }
+
+    CreateWorkloadScreen #stage_tabs > ContentSwitcher {
+        height: 1fr;
+    }
+
+    CreateWorkloadScreen #stage_tabs TabPane {
+        height: 1fr;
+        overflow-y: auto;
+    }
+
+    /* Modes */
+    CreateWorkloadScreen.picking #stage_panel { display: none; }
+    CreateWorkloadScreen.editing #drafts_panel { display: none; }
+
+    CreateWorkloadScreen #drafts_table {
+        height: 1fr;
+    }
+
+    CreateWorkloadScreen #status_line {
+        height: 1;
         padding: 0 2;
-        align: left middle;
-    }
-
-    CreateWorkloadScreen #stage_stepper {
-        width: 1fr;
-        align: center middle;
-    }
-
-    CreateWorkloadScreen #stage_stepper .step {
-        padding: 0 1;
         color: $text-muted;
-    }
-
-    CreateWorkloadScreen #stage_stepper .step.current {
-        text-style: bold;
-        color: $text;
     }
     """
 
     SCREEN_CONTROLS = [
         Binding("ctrl+s", "save", "Save"),
-        Binding("ctrl+n", "new_draft", "New draft"),
-        Binding("left", "back", "Back"),
-        Binding("right", "next", "Next"),
+        Binding("ctrl+n", "new_draft", "New workload"),
+        Binding("r", "refresh_drafts", "Refresh drafts"),
+        # Arrow keys get consumed by Input/TextArea for cursor movement; provide
+        # alternatives that work while typing.
+        Binding("ctrl+pageup", "back", "Back"),
+        Binding("ctrl+pagedown", "next", "Next"),
+        Binding("alt+left", "back", "Back"),
+        Binding("alt+right", "next", "Next"),
+        Binding("left", "back", "Back", show=False),
+        Binding("right", "next", "Next", show=False),
     ]
 
     NAVIGATION_CONTROLS = [
@@ -106,6 +99,7 @@ class CreateWorkloadScreen(Screen[None]):
         self._stage_id: StageId = StageId.WORKLOAD
         self._start_new_draft_on_mount: bool = False
         self._editing: bool = False
+        self._enabled_stage_ids: set[StageId] = {StageId.WORKLOAD}
 
     # --- UI ---
     def compose(self) -> ComposeResult:
@@ -113,29 +107,16 @@ class CreateWorkloadScreen(Screen[None]):
 
         with Horizontal(id="wizard_body"):
             with Vertical(id="drafts_panel"):
-                yield Static("Resume draft", classes="section_title")
-                yield Static("Select a saved draft or create a new one.", classes="muted")
-                yield ListView(id="drafts_list")
-                with Horizontal():
-                    yield Button("New draft", id="new_draft", variant="primary")
-                    yield Button("Refresh", id="refresh_drafts", variant="default")
+                yield Static("Workload drafts", classes="section_title")
+                yield DataTable(id="drafts_table", cursor_type="row", zebra_stripes=True)
 
             with Vertical(id="stage_panel"):
-                yield Static("", id="stage_title", classes="section_title")
-                yield Container(id="stage_container")
+                with TabbedContent(id="stage_tabs", initial="workload"):
+                    yield TabPane("2.1 Workload", id="workload")
+                    yield TabPane("2.2 Job", id="job")
+                    yield TabPane("2.3 Hardware", id="hardware")
 
-        with Horizontal(id="wizard_footer"):
-            yield Button("Back", id="back_btn")
-            yield Button("Save", id="save_btn", variant="primary")
-            yield Button("Next", id="next_btn", variant="default")
-            with Horizontal(id="stage_stepper"):
-                yield Static("2.1 Workload", id="step_workload", classes="step")
-                yield Static(">", classes="muted")
-                yield Static("2.2 Job", id="step_job", classes="step")
-                yield Static(">", classes="muted")
-                yield Static("2.3 Hardware", id="step_hardware", classes="step")
-            yield Static("", id="footer_status", classes="muted")
-
+        yield Static("", id="status_line")
         yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
@@ -144,12 +125,7 @@ class CreateWorkloadScreen(Screen[None]):
         if self._start_new_draft_on_mount:
             self._start_new_draft_on_mount = False
             self._new_draft()
-
-        # Focus the drafts list for quick keyboard selection.
-        try:
-            self.query_one("#drafts_list", ListView).focus()
-        except Exception:
-            pass
+        self._focus_drafts_table()
 
     # Public helpers (used by app/nav to start the flow)
     def start_new_draft(self) -> None:
@@ -170,6 +146,9 @@ class CreateWorkloadScreen(Screen[None]):
     def action_save(self) -> None:
         self._save_current()
 
+    def action_refresh_drafts(self) -> None:
+        self._refresh_drafts_list()
+
     def action_back(self) -> None:
         self._go_back()
 
@@ -182,51 +161,84 @@ class CreateWorkloadScreen(Screen[None]):
                 self._new_draft()
             case "refresh_drafts":
                 self._refresh_drafts_list()
-            case "save_btn":
-                self._save_current()
-            case "back_btn":
-                self._go_back()
-            case "next_btn":
-                self._go_next()
 
-    def on_list_view_selected(self, event: ListView.Selected) -> None:
-        item = event.item
-        if isinstance(item, DraftListItem):
-            self._load_draft(item.config_id)
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        # Selection happens on Enter (action_select_cursor) when cursor_type="row".
+        config_id = event.row_key.value
+        if config_id:
+            self._load_draft(config_id)
 
     # --- Data helpers ---
     @property
     def _repo(self):
         return getattr(self.app, "storage").workload_drafts
 
+    def _focus_drafts_table(self) -> None:
+        try:
+            self.query_one("#drafts_table", DataTable).focus()
+        except Exception:
+            pass
+
+    @staticmethod
+    def _fmt_dt_local(dt: datetime | None) -> str:
+        if dt is None:
+            return "-"
+        try:
+            return dt.astimezone().strftime("%Y-%m-%d %H:%M")
+        except Exception:
+            return str(dt)
+
     def _refresh_drafts_list(self) -> None:
-        lv = self.query_one("#drafts_list", ListView)
-        # Clear existing rows. (We avoid per-row widget IDs to sidestep DuplicateIds errors.)
-        if hasattr(lv, "clear") and callable(getattr(lv, "clear")):
-            lv.clear()  # type: ignore[attr-defined]
-        else:
-            lv.remove_children()
+        table = self.query_one("#drafts_table", DataTable)
+        table.clear(columns=True)
+        table.add_columns(
+            "Name",
+            "Last updated",
+            "Interruptible",
+            "Delay tolerance",
+            "Fleet",
+            "Runtime",
+        )
         try:
             drafts = self._repo.list_drafts()
         except Exception as e:
-            lv.append(ListItem(Static(f"Error: {e}", classes="muted")))
+            table.add_row(f"Error: {e}", "", "", "", "", "")
             return
 
         if not drafts:
-            lv.append(ListItem(Static("No drafts yet.", classes="muted")))
+            table.add_row("No drafts yet.", "", "", "", "", "")
             return
 
         for d in drafts:
             name = d.name.strip() or "(unnamed)"
-            lv.append(DraftListItem(config_id=d.config_id, label=name))
+            interruptible = (
+                "-" if d.interruptible is None else ("Yes" if d.interruptible else "No")
+            )
+            delay = d.delay_tolerance.label() if d.delay_tolerance is not None else "-"
+            fleet = d.fleet_name or (str(d.fleet_id) if d.fleet_id is not None else "-")
+            runtime = (
+                f"{int(d.runtime_estimate_seconds // 60)} min"
+                if d.runtime_estimate_seconds is not None
+                else "-"
+            )
+            table.add_row(
+                name,
+                self._fmt_dt_local(d.updated_at),
+                interruptible,
+                delay,
+                fleet,
+                runtime,
+                key=d.config_id,
+            )
 
     def _new_draft(self) -> None:
         self._set_mode(editing=True)
         self._config = self._repo.create_draft()
         self._stage_id = StageId.WORKLOAD
+        self._enabled_stage_ids = {StageId.WORKLOAD}
         self._refresh_drafts_list()
-        self._render_stage()
-        self._update_stepper()
+        self._sync_tabs_from_state()
+        self._ensure_stage_mounted(StageId.WORKLOAD)
         self._set_footer_status("Created new draft.")
 
     def _load_draft(self, config_id: str) -> None:
@@ -236,9 +248,10 @@ class CreateWorkloadScreen(Screen[None]):
             return
         self._set_mode(editing=True)
         self._config = cfg
+        self._enabled_stage_ids = self._infer_enabled_stages(cfg)
         self._stage_id = StageId.WORKLOAD
-        self._render_stage()
-        self._update_stepper()
+        self._sync_tabs_from_state()
+        self._ensure_stage_mounted(StageId.WORKLOAD)
         self._set_footer_status("Loaded draft.")
 
     def _save_current(self) -> None:
@@ -262,12 +275,12 @@ class CreateWorkloadScreen(Screen[None]):
             # Return to draft picker (without forcing the config panel to show).
             self._save_current()
             self._set_mode(editing=False)
-            self._update_stepper()
             self._set_footer_status("Pick a draft or create a new one.")
+            self._focus_drafts_table()
             return
         self._stage_id = StageId(self._stage_id - 1)
-        self._render_stage()
-        self._update_stepper()
+        self._sync_tabs_from_state()
+        self._ensure_stage_mounted(self._stage_id)
 
     def _go_next(self) -> None:
         if not self._editing:
@@ -297,39 +310,27 @@ class CreateWorkloadScreen(Screen[None]):
             return
 
         self._stage_id = StageId(self._stage_id + 1)
-        self._render_stage()
-        self._update_stepper()
+        self._enabled_stage_ids.add(self._stage_id)
+        self._sync_tabs_from_state()
+        self._ensure_stage_mounted(self._stage_id)
 
     def _set_footer_status(self, text: str) -> None:
-        self.query_one("#footer_status", Static).update(text)
+        try:
+            self.query_one("#status_line", Static).update(text)
+        except Exception:
+            pass
 
     # --- Stage orchestration ---
     def _active_stage(self) -> CreateWorkloadStage | None:
-        container = self.query_one("#stage_container", Container)
-        for child in container.children:
+        # Find the stage widget inside the currently active TabPane.
+        tabbed = self.query_one("#stage_tabs", TabbedContent)
+        pane = tabbed.active_pane
+        if pane is None:
+            return None
+        for child in pane.children:
             if isinstance(child, CreateWorkloadStage):
                 return child
         return None
-
-    def _render_stage(self) -> None:
-        if not self._editing:
-            return
-        title = self.query_one("#stage_title", Static)
-        container = self.query_one("#stage_container", Container)
-        container.remove_children()
-
-        stage: CreateWorkloadStage
-        if self._stage_id == StageId.WORKLOAD:
-            stage = Stage1WorkloadCreation()
-        elif self._stage_id == StageId.JOB:
-            stage = Stage2JobSpecification()
-        else:
-            stage = Stage3HardwareConfig()
-
-        title.update(stage.title)
-        container.mount(stage)
-        if self._config is not None:
-            stage.load_from_config(self._config)
 
     def _set_mode(self, *, editing: bool) -> None:
         self._editing = editing
@@ -340,38 +341,83 @@ class CreateWorkloadScreen(Screen[None]):
             self.remove_class("editing")
             self.add_class("picking")
 
-        # Update footer buttons to match mode.
-        self.query_one("#back_btn", Button).disabled = not editing
-        self.query_one("#save_btn", Button).disabled = not editing
-        self.query_one("#next_btn", Button).disabled = not editing
-        self._update_stepper()
+    def _infer_enabled_stages(self, cfg: WorkloadConfig) -> set[StageId]:
+        enabled: set[StageId] = {StageId.WORKLOAD}
+        if cfg.name.strip():
+            enabled.add(StageId.JOB)
+        if StageId.JOB in enabled and cfg.delay_tolerance is not None:
+            enabled.add(StageId.HARDWARE)
+        return enabled
 
-    def _update_stepper(self) -> None:
-        if not self._editing:
-            # Stepper is a container; just remove the current highlight.
-            for wid in ("#step_workload", "#step_job", "#step_hardware"):
+    def _stage_id_to_pane_id(self, stage_id: StageId) -> str:
+        return {
+            StageId.WORKLOAD: "workload",
+            StageId.JOB: "job",
+            StageId.HARDWARE: "hardware",
+        }[stage_id]
+
+    def _pane_id_to_stage_id(self, pane_id: str) -> StageId:
+        return {
+            "workload": StageId.WORKLOAD,
+            "job": StageId.JOB,
+            "hardware": StageId.HARDWARE,
+        }[pane_id]
+
+    def _sync_tabs_from_state(self) -> None:
+        # Ensure TabbedContent reflects current stage + gating.
+        tabbed = self.query_one("#stage_tabs", TabbedContent)
+        content_tabs = tabbed.query_one(ContentTabs)
+        for sid in (StageId.WORKLOAD, StageId.JOB, StageId.HARDWARE):
+            pane_id = self._stage_id_to_pane_id(sid)
+            if sid in self._enabled_stage_ids:
                 try:
-                    self.query_one(wid, Static).remove_class("current")
+                    content_tabs.enable(pane_id)
                 except Exception:
                     pass
-            return
-
-        step_map = {
-            StageId.WORKLOAD: "#step_workload",
-            StageId.JOB: "#step_job",
-            StageId.HARDWARE: "#step_hardware",
-        }
-        for sid, selector in step_map.items():
-            w = self.query_one(selector, Static)
-            if sid == self._stage_id:
-                w.add_class("current")
             else:
-                w.remove_class("current")
+                try:
+                    content_tabs.disable(pane_id)
+                except Exception:
+                    pass
 
+        tabbed.active = self._stage_id_to_pane_id(self._stage_id)
 
-class DraftListItem(ListItem):
-    """List item representing a draft workload config."""
+    def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated) -> None:
+        # Keep stage_id in sync; don't allow activating disabled tabs (gating).
+        pane_id = event.pane.id or ""
+        if not pane_id:
+            return
+        stage_id = self._pane_id_to_stage_id(pane_id)
+        if stage_id not in self._enabled_stage_ids:
+            # Revert to current allowed stage.
+            try:
+                event.tabbed_content.active = self._stage_id_to_pane_id(self._stage_id)
+            except Exception:
+                pass
+            return
+        self._stage_id = stage_id
+        self._ensure_stage_mounted(stage_id)
 
-    def __init__(self, *, config_id: str, label: str) -> None:
-        super().__init__(Static(label, classes="muted"))
-        self.config_id = config_id
+    def _ensure_stage_mounted(self, stage_id: StageId) -> None:
+        if not self._editing:
+            return
+        tabbed = self.query_one("#stage_tabs", TabbedContent)
+        pane = tabbed.query_one(f"#{self._stage_id_to_pane_id(stage_id)}", TabPane)
+        for child in pane.children:
+            if isinstance(child, CreateWorkloadStage):
+                # Already mounted; ensure it is refreshed from current config.
+                if self._config is not None:
+                    child.load_from_config(self._config)
+                return
+
+        stage: CreateWorkloadStage
+        if stage_id == StageId.WORKLOAD:
+            stage = Stage1WorkloadCreation()
+        elif stage_id == StageId.JOB:
+            stage = Stage2JobSpecification()
+        else:
+            stage = Stage3HardwareConfig()
+
+        pane.mount(stage)
+        if self._config is not None:
+            stage.load_from_config(self._config)

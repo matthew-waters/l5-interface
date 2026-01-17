@@ -16,9 +16,14 @@ class Stage1WorkloadCreation(CreateWorkloadStage):
     stage_id = StageId.WORKLOAD
     title = "2.1 Workload Creation"
 
+    DEFAULT_CSS = """
+    .WorkloadDetails {
+        padding: 1 1;
+    }
+    """
+
     def compose(self) -> ComposeResult:
-        with Container(classes="card"):
-            yield Static("Workload details", classes="section_title")
+        with Container(classes="WorkloadDetails"):
             with Vertical():
                 yield Static("Name", classes="muted")
                 yield Input(id="name", placeholder="e.g. Train model v2")
