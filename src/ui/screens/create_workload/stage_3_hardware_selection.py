@@ -15,9 +15,9 @@ from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, Stage
 from src.ui.screens.create_workload.components import ids
 
 
-class Stage3HardwareConfig(CreateWorkloadStage):
-    stage_id = StageId.HARDWARE
-    title = "2.3 Hardware Configuration"
+class Stage3HardwareSelection(CreateWorkloadStage):
+    stage_id = StageId.HARDWARE_SELECT
+    title = "Create Workload -> Hardware Selection"
 
     CSS_PATH = "./create_workload.tcss"
 

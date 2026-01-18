@@ -11,7 +11,7 @@ from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, Stage
 from src.ui.screens.create_workload.components import ids
 from src.ui.screens.create_workload.stage_1_general_details import Stage1GeneralDetails
 from src.ui.screens.create_workload.stage_2_job_specification import Stage2JobSpecification
-from src.ui.screens.create_workload.stage_3_hardware_config import Stage3HardwareConfig
+from src.ui.screens.create_workload.stage_3_hardware_selection import Stage3HardwareSelection
 
 
 class CreateWorkloadStageTabs(Widget):
@@ -20,13 +20,13 @@ class CreateWorkloadStageTabs(Widget):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._config: WorkloadConfig | None = None
-        self._stage_id: StageId = StageId.WORKLOAD
+        self._stage_id: StageId = StageId.GENERAL_DETAILS
 
     def compose(self) -> ComposeResult:
         with TabbedContent(id=ids.STAGE_TABBED_CONTENT_ID, initial="workload"):
-            yield TabPane("2.1 Workload", id="workload")
-            yield TabPane("2.2 Job", id="job")
-            yield TabPane("2.3 Hardware", id="hardware")
+            yield TabPane("2.1 General Details", id="workload")
+            yield TabPane("2.2 Job Spec", id="job")
+            yield TabPane("2.3 Hardware Select", id="hardware")
 
     def load_config(self, config: WorkloadConfig | None) -> None:
         """Set the active config and refresh the current stage UI from it."""
@@ -67,12 +67,12 @@ class CreateWorkloadStageTabs(Widget):
                 return
 
         stage: CreateWorkloadStage
-        if stage_id == StageId.WORKLOAD:
-            stage = Stage1WorkloadCreation()
-        elif stage_id == StageId.JOB:
+        if stage_id == StageId.GENERAL_DETAILS:
+            stage = Stage1GeneralDetails()
+        elif stage_id == StageId.JOB_SPEC:
             stage = Stage2JobSpecification()
         else:
-            stage = Stage3HardwareConfig()
+            stage = Stage3HardwareSelection()
 
         pane.mount(stage)
         if self._config is not None:
@@ -81,16 +81,16 @@ class CreateWorkloadStageTabs(Widget):
     @staticmethod
     def _stage_id_to_pane_id(stage_id: StageId) -> str:
         return {
-            StageId.WORKLOAD: "workload",
-            StageId.JOB: "job",
-            StageId.HARDWARE: "hardware",
+            StageId.GENERAL_DETAILS: "workload",
+            StageId.JOB_SPEC: "job",
+            StageId.HARDWARE_SELECT: "hardware",
         }[stage_id]
 
     @staticmethod
     def _pane_id_to_stage_id(pane_id: str) -> StageId:
         return {
-            "workload": StageId.WORKLOAD,
-            "job": StageId.JOB,
-            "hardware": StageId.HARDWARE,
+            "workload": StageId.GENERAL_DETAILS,
+            "job": StageId.JOB_SPEC,
+            "hardware": StageId.HARDWARE_SELECT,
         }[pane_id]
 

@@ -14,8 +14,8 @@ from src.ui.screens.create_workload.components import ids
 
 
 class Stage1GeneralDetails(CreateWorkloadStage):
-    stage_id = StageId.WORKLOAD
-    title = "Create Workload - General Details"
+    stage_id = StageId.GENERAL_DETAILS
+    title = "Create Workload -> General Details"
 
     CSS_PATH = "./create_workload.tcss"
 

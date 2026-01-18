@@ -14,8 +14,8 @@ from src.ui.screens.create_workload.components import ids
 
 
 class Stage2JobSpecification(CreateWorkloadStage):
-    stage_id = StageId.JOB
-    title = "Create Workload - Job Specification"
+    stage_id = StageId.JOB_SPEC
+    title = "Create Workload -> Job Specification"
 
     CSS_PATH = "./create_workload.tcss"
 

@@ -32,7 +32,7 @@ class CreateWorkloadScreen(Screen[None]):
     def __init__(self) -> None:
         super().__init__()
         self._config: WorkloadConfig | None = None
-        self._stage_id: StageId = StageId.WORKLOAD
+        self._stage_id: StageId = StageId.GENERAL_DETAILS
         self._start_new_draft_on_mount: bool = False
         self._editing: bool = False
 
@@ -159,9 +159,9 @@ class CreateWorkloadScreen(Screen[None]):
     def _new_draft(self) -> None:
         self._set_mode(editing=True)
         self._config = self._repo.create_draft()
-        self._stage_id = StageId.WORKLOAD
+        self._stage_id = StageId.GENERAL_DETAILS
         self._refresh_drafts_list()
-        self._stage_tabs().go_to(StageId.WORKLOAD)
+        self._stage_tabs().go_to(StageId.GENERAL_DETAILS)
         self._stage_tabs().load_config(self._config)
         self._set_footer_status("Created new draft.")
 
@@ -172,8 +172,8 @@ class CreateWorkloadScreen(Screen[None]):
             return
         self._set_mode(editing=True)
         self._config = cfg
-        self._stage_id = StageId.WORKLOAD
-        self._stage_tabs().go_to(StageId.WORKLOAD)
+        self._stage_id = StageId.GENERAL_DETAILS
+        self._stage_tabs().go_to(StageId.GENERAL_DETAILS)
         self._stage_tabs().load_config(self._config)
         self._set_footer_status("Loaded draft.")
 
