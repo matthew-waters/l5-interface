@@ -19,56 +19,7 @@ class CreateWorkloadScreen(Screen[None]):
     """Staged workflow for defining and preparing a workload."""
     HEADER_TITLE = "Create Workload"
 
-    DEFAULT_CSS = """
-    CreateWorkloadScreen {
-        /* The global theme sets Screen overflow-y: auto; for the wizard we want a stable layout. */
-        overflow-y: hidden;
-        layout: vertical;
-    }
-
-    CreateWorkloadScreen #wizard_body {
-        height: 1fr;
-    }
-
-    CreateWorkloadScreen #drafts_panel {
-        width: 1fr;
-        padding: 1 1;
-    }
-
-    CreateWorkloadScreen #stage_panel {
-        width: 1fr;
-        height: 1fr;
-        padding: 1 2;
-    }
-
-    /* Ensure tab content has space; TabbedContent defaults to height:auto. */
-    CreateWorkloadScreen #stage_tabs {
-        height: 1fr;
-    }
-
-    CreateWorkloadScreen #stage_tabs > ContentSwitcher {
-        height: 1fr;
-    }
-
-    CreateWorkloadScreen #stage_tabs TabPane {
-        height: 1fr;
-        overflow-y: auto;
-    }
-
-    /* Modes */
-    CreateWorkloadScreen.picking #stage_panel { display: none; }
-    CreateWorkloadScreen.editing #drafts_panel { display: none; }
-
-    CreateWorkloadScreen #drafts_table {
-        height: 1fr;
-    }
-
-    CreateWorkloadScreen #status_line {
-        height: 1;
-        padding: 0 2;
-        color: $text-muted;
-    }
-    """
+    CSS_PATH = "./create_workload.tcss"
 
     SCREEN_CONTROLS = [
         Binding("ctrl+s", "save", "Save"),
