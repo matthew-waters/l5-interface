@@ -28,7 +28,6 @@ class DraftsTable(Widget):
             id=ids.DRAFTS_DATA_TABLE_ID,
             cursor_type="row",
             zebra_stripes=True,
-            cell_padding=4,
         )
 
     def focus_table(self) -> None:
