@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from textual import events
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 
@@ -41,6 +42,22 @@ class L5InterfaceApp(App[None]):
         self.install_screen(TimelineScreen(), name="timeline")
         self.install_screen(ExecutionOverviewScreen(), name="execution")
         self.push_screen("home")
+
+    async def on_unmount(self, event: events.Unmount) -> None:
+        """Best-effort cleanup on exit.
+
+        `textual run --dev` uses Textual devtools which creates an aiohttp ClientSession.
+        If the devtools websocket connection fails, Textual may not call disconnect()
+        (it only disconnects when "connected"), which can leave an unclosed session
+        warning on quit. We defensively disconnect here.
+        """
+        devtools = getattr(self, "devtools", None)
+        if devtools is not None:
+            try:
+                await devtools.disconnect()
+            except Exception:
+                # Best-effort; never block shutdown on devtools cleanup.
+                pass
 
     def compose(self) -> ComposeResult:
         yield from ()

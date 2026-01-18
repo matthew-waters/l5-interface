@@ -10,20 +10,17 @@ from textual.widgets import Checkbox, Select, Static
 
 from src.models.workload_config import DelayTolerance, WorkloadConfig
 from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, StageId
+from src.ui.screens.create_workload.components import ids
 
 
 class Stage2JobSpecification(CreateWorkloadStage):
     stage_id = StageId.JOB
     title = "2.2 Job Specification"
 
-    DEFAULT_CSS = """
-    .JobSpecContainer {
-        padding: 1 1;
-    }
-    """
+    CSS_PATH = "./create_workload.tcss"
 
     def compose(self) -> ComposeResult:
-        with Container(classes="JobSpecContainer"):
+        with Container(id=ids.STAGE_2_CONTAINER_ID):
             with Vertical():
                 yield Checkbox("Interruptible (checkpointing supported)", id="interruptible")
                 yield Static("Delay tolerance", classes="muted")

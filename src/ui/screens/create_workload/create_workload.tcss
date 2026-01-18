@@ -1,5 +1,5 @@
+/* Create Workload Screen Styles */
 CreateWorkloadScreen {
-    /* The global theme sets Screen overflow-y: auto; for the wizard we want a stable layout. */
     overflow-y: hidden;
     layout: vertical;
 }
@@ -37,7 +37,6 @@ CreateWorkloadScreen #stage_tabs TabPane {
     overflow-y: auto;
 }
 
-/* Modes */
 CreateWorkloadScreen.picking #stage_panel { display: none; }
 CreateWorkloadScreen.editing #drafts_panel { display: none; }
 
@@ -45,4 +44,19 @@ CreateWorkloadScreen #status_line {
     height: 1;
     padding: 0 2;
     color: $text-muted;
+}
+
+/* Stage 1 - Workload Definition Styles */
+#stage_1_container {
+    padding: 1 1;
+}
+
+/* Stage 2 - Job Specification Styles */
+#stage_2_container {
+    padding: 1 1;
+}
+
+/* Stage 3 - Hardware Configuration Styles */
+#stage_3_container {
+    padding: 1 1;
 }

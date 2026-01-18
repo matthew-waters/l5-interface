@@ -10,20 +10,17 @@ from textual.widgets import Input, Static, TextArea
 
 from src.models.workload_config import WorkloadConfig
 from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, StageId
+from src.ui.screens.create_workload.components import ids
 
 
 class Stage1WorkloadCreation(CreateWorkloadStage):
     stage_id = StageId.WORKLOAD
     title = "2.1 Workload Creation"
 
-    DEFAULT_CSS = """
-    .WorkloadCreationContainer {
-        padding: 1 1;
-    }
-    """
+    CSS_PATH = "./create_workload.tcss"
 
     def compose(self) -> ComposeResult:
-        with Container(classes="WorkloadCreationContainer"):
+        with Container(id=ids.STAGE_1_CONTAINER_ID):
             with Vertical():
                 yield Static("Name", classes="muted")
                 yield Input(id="name", placeholder="e.g. Train model v2")

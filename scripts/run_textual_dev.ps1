@@ -8,5 +8,5 @@ Usage: powershell -ExecutionPolicy Bypass -File .\scripts\run_textual_dev.ps1
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 Set-Location $RepoRoot
 
-textual run --dev src.ui.app:L5InterfaceApp
+textual run --dev src.app:L5InterfaceApp
 

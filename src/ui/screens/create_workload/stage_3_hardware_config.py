@@ -12,11 +12,14 @@ from textual.widgets import Button, Input, Select, Static
 from src.backend.data.availability_data import get_available_fleets, get_fleet_details
 from src.models.workload_config import RuntimeEstimateSource, WorkloadConfig
 from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, StageId
+from src.ui.screens.create_workload.components import ids
 
 
 class Stage3HardwareConfig(CreateWorkloadStage):
     stage_id = StageId.HARDWARE
     title = "2.3 Hardware Configuration"
+
+    CSS_PATH = "./create_workload.tcss"
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -25,7 +28,7 @@ class Stage3HardwareConfig(CreateWorkloadStage):
         self._pending_fleet_id: str | None = None
 
     def compose(self) -> ComposeResult:
-        with Container():
+        with Container(id=ids.STAGE_3_CONTAINER_ID):
             yield Static("Spot Fleet selection", classes="section_title")
             with Vertical():
                 yield Static("Fleet", classes="muted")

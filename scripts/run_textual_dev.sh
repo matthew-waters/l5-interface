@@ -7,5 +7,5 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
-textual run --dev src.ui.app:L5InterfaceApp
+textual run --dev src.app:L5InterfaceApp
 

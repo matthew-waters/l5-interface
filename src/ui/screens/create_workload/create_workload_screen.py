@@ -21,18 +21,13 @@ class CreateWorkloadScreen(Screen[None]):
 
     CSS_PATH = "./create_workload.tcss"
 
-    SCREEN_CONTROLS = [
+    BINDINGS = [
         Binding("ctrl+s", "save", "Save"),
         Binding("ctrl+n", "new_draft", "New workload"),
         Binding("r", "refresh_drafts", "Refresh drafts"),
         Binding("escape", "exit_to_drafts", "Drafts"),
         Binding("delete", "delete_draft", "Delete draft"),
     ]
-
-    NAVIGATION_CONTROLS = [
-    ]        
-
-    BINDINGS = SCREEN_CONTROLS + NAVIGATION_CONTROLS
 
     def __init__(self) -> None:
         super().__init__()
