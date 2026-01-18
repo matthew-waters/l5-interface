@@ -28,9 +28,12 @@ class SpotFleetDataService:
         self._client = api_client or SpotFleetAPIClient()
         self._freshness_tracker = get_freshness_tracker()
 
-    def _update_freshness(self) -> None:
-        """Update the availability data freshness timestamp."""
-        self._freshness_tracker.update_availability_freshness()
+    def _update_freshness(self, timestamp: datetime | None = None) -> None:
+        """Update the availability data freshness timestamp.
+
+        If timestamp is None, this is a no-op (we avoid clobbering freshness with N/A).
+        """
+        self._freshness_tracker.update_availability_freshness(timestamp)
 
     def list_available_fleets(self) -> list[RequestGroup]:
         """List all available request groups (fleets).
@@ -39,7 +42,7 @@ class SpotFleetDataService:
             List of RequestGroup objects
         """
         fleets = self._client.get_request_groups()
-        self._update_freshness()
+        self._update_freshness(None)
         return fleets
 
     def get_fleet_details(self, fleet_id: str | int) -> RequestGroup:
@@ -52,7 +55,7 @@ class SpotFleetDataService:
             RequestGroup object
         """
         fleet = self._client.get_request_group(fleet_id)
-        self._update_freshness()
+        self._update_freshness(None)
         return fleet
 
     def get_latest_placement_scores(
@@ -75,7 +78,8 @@ class SpotFleetDataService:
         scores = self._client.get_latest_placement_scores(
             fleet_id, az=az, target_capacity=target_capacity
         )
-        self._update_freshness()
+        if scores:
+            self._update_freshness(max(score.measured_at for score in scores))
         return scores
 
     def get_placement_score_history(
@@ -114,7 +118,8 @@ class SpotFleetDataService:
             target_capacity=target_capacity,
             limit=limit,
         )
-        self._update_freshness()
+        if scores:
+            self._update_freshness(max(score.measured_at for score in scores))
         return scores
 
     def get_pool_interruption_history(

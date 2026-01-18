@@ -19,8 +19,10 @@ class FleetFreshnessTracker:
         self._api_client = api_client
 
     def update(self, timestamp: datetime | None = None) -> None:
+        # Important: don't overwrite a previously-known freshness timestamp with None.
+        # Spot Fleet UI flows may make API calls that don't include any time-series
+        # datapoint; those should not reset freshness to "N/A".
         if timestamp is None:
-            self._last_updated = None
             return
         if timestamp.tzinfo is None:
             timestamp = timestamp.replace(tzinfo=timezone.utc)
