@@ -46,9 +46,13 @@ CreateWorkloadScreen #status_line {
     color: $text-muted;
 }
 
-/* Stage 1 - Workload Definition Styles */
+/* Stage 1 - General Details Styles */
 #stage_1_container {
     padding: 1 1;
+}
+
+#stage_1_container #description {
+    height: 10;
 }
 
 /* Stage 2 - Job Specification Styles */

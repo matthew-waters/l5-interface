@@ -9,7 +9,7 @@ from textual.widgets import TabbedContent, TabPane
 from src.models.workload_config import WorkloadConfig
 from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, StageId
 from src.ui.screens.create_workload.components import ids
-from src.ui.screens.create_workload.stage_1_workload_creation import Stage1WorkloadCreation
+from src.ui.screens.create_workload.stage_1_general_details import Stage1GeneralDetails
 from src.ui.screens.create_workload.stage_2_job_specification import Stage2JobSpecification
 from src.ui.screens.create_workload.stage_3_hardware_config import Stage3HardwareConfig
 
