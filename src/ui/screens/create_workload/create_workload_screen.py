@@ -26,6 +26,7 @@ class CreateWorkloadScreen(Screen[None]):
         Binding("ctrl+n", "new_draft", "New workload"),
         Binding("r", "refresh_drafts", "Refresh drafts"),
         Binding("escape", "exit_to_drafts", "Drafts"),
+        Binding("delete", "delete_draft", "Delete draft"),
     ]
 
     NAVIGATION_CONTROLS = [
@@ -88,14 +89,38 @@ class CreateWorkloadScreen(Screen[None]):
     def action_exit_to_drafts(self) -> None:
         self._exit_to_drafts()
 
+    def action_delete_draft(self) -> None:
+        # Only meaningful on the drafts list view.
+        if self._editing:
+            return
+
+        config_id = self._drafts_table().selected_config_id()
+        if not config_id:
+            self._set_footer_status("Select a draft row first.")
+            return
+
+        ok = False
+        try:
+            ok = bool(self._repo.delete_draft(str(config_id)))
+        except Exception as e:
+            self._set_footer_status(f"Unable to delete draft: {e}")
+            return
+
+        if ok:
+            self._set_footer_status("Draft deleted.")
+        else:
+            self._set_footer_status("Unable to delete draft.")
+        self._refresh_drafts_list()
+        self._drafts_table().focus_table()
+
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         """Conditionally enable/hide actions based on focus.
 
         Returning False means the action is disabled and not shown in the Footer.
         """
-        if action in {"save", "new_draft", "refresh_drafts"}:
+        if action in {"save", "new_draft", "refresh_drafts", "delete_draft"}:
             # Only show "new workload" + "refresh drafts" on the drafts list.
-            if action in {"new_draft", "refresh_drafts"} and self._editing:
+            if action in {"new_draft", "refresh_drafts", "delete_draft"} and self._editing:
                 return False
 
             focused = getattr(self.app, "focused", None)

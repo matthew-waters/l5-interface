@@ -36,6 +36,15 @@ class DraftsTable(Widget):
         except Exception:
             pass
 
+    def selected_config_id(self) -> str | None:
+        """Return the config_id for the currently highlighted row (if any)."""
+        try:
+            table = self.query_one(f"#{ids.DRAFTS_DATA_TABLE_ID}", DataTable)
+            row_key, _ = table.coordinate_to_cell_key(table.cursor_coordinate)
+            return row_key.value if row_key.value else None
+        except Exception:
+            return None
+
     @staticmethod
     def _fmt_dt_local(dt: datetime | None) -> str:
         if dt is None:

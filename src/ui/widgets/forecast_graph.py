@@ -1,2 +1,0 @@
-"""Forecast visualisation widget (scaffold)."""
-
