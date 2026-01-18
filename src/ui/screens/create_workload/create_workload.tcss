@@ -13,7 +13,9 @@ CreateWorkloadScreen #drafts_panel {
 }
 
 CreateWorkloadScreen #drafts_table {
-    width: auto;
+    height: 100%;
+    padding-bottom: 1;
+    overflow-x: auto;
 }
 
 CreateWorkloadScreen #stage_panel {
