@@ -11,7 +11,7 @@ from src.models.workload_config import WorkloadConfig
 
 class StageId(IntEnum):
     GENERAL_DETAILS = 1
-    JOB_SPEC = 2
+    JOB_SEMANTICS = 2
     HARDWARE_SELECT= 3
 
 
