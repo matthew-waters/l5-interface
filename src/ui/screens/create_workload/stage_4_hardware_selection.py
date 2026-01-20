@@ -1,4 +1,4 @@
-"""Create workload: Stage 4 - hardware configuration + runtime estimate."""
+"""Create workload: Stage 4 - hardware selection."""
 
 from __future__ import annotations
 
@@ -6,16 +6,16 @@ from dataclasses import replace
 
 from textual import work
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Button, Input, Select, Static
+from textual.containers import Container, Vertical
+from textual.widgets import Select, Static
 
 from src.backend.data.availability_data import get_available_fleets, get_fleet_details
-from src.models.workload_config import RuntimeEstimateSource, WorkloadConfig
+from src.models.workload_config import WorkloadConfig
 from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, StageId
 from src.ui.screens.create_workload.components import ids
 
 
-class Stage3HardwareSelection(CreateWorkloadStage):
+class Stage4HardwareSelection(CreateWorkloadStage):
     stage_id = StageId.HARDWARE_SELECT
     title = "Create Workload -> Hardware Selection"
 
@@ -41,27 +41,10 @@ class Stage3HardwareSelection(CreateWorkloadStage):
                 yield Static("Target capacities: -", id="fleet_caps", classes="muted")
                 yield Static("Purpose: -", id="fleet_purpose", classes="muted")
 
-        with Container():
-            yield Static("Runtime estimate (required)", classes="section_title")
-            yield Static(
-                "Provide an estimate for the selected fleet. Profiling is coming soon; manual entry works now.",
-                classes="muted",
-            )
-            with Horizontal():
-                yield Input(id="runtime_minutes", placeholder="Minutes", restrict=r"\d*")
-                yield Static("min", classes="muted")
-                yield Button("Run profiling (coming soon)", id="run_profiling", variant="default")
-
     def on_mount(self) -> None:
         self._load_fleets()
 
     def load_from_config(self, config: WorkloadConfig) -> None:
-        self.query_one("#runtime_minutes", Input).value = (
-            str(int(config.runtime_estimate_seconds // 60))
-            if config.runtime_estimate_seconds is not None
-            else ""
-        )
-
         sel = self.query_one("#fleet_select", Select)
         if config.fleet_id is None:
             # Textual Select doesn't allow setting value to None; use clear().
@@ -82,7 +65,6 @@ class Stage3HardwareSelection(CreateWorkloadStage):
 
     def apply_to_config(self, config: WorkloadConfig) -> WorkloadConfig:
         fleet_raw = self.query_one("#fleet_select", Select).value
-        runtime_minutes_raw = self.query_one("#runtime_minutes", Input).value.strip()
 
         # Textual Select uses a sentinel for "no selection" (Select.BLANK / NoSelection).
         fleet_id = (
@@ -90,7 +72,6 @@ class Stage3HardwareSelection(CreateWorkloadStage):
             if fleet_raw not in (None, "", Select.BLANK)
             else None
         )
-        runtime_seconds = int(runtime_minutes_raw) * 60 if runtime_minutes_raw else None
 
         fleet = self._fleet_details
         fleet_name = self._fleet_name_by_id.get(str(fleet_id)) if fleet_id is not None else None
@@ -102,25 +83,12 @@ class Stage3HardwareSelection(CreateWorkloadStage):
             fleet_instance_types=(fleet.instance_types if fleet is not None else None),
             fleet_target_capacities=(fleet.target_capacities if fleet is not None else None),
             fleet_metadata=(fleet.metadata if fleet is not None else None),
-            runtime_estimate_seconds=runtime_seconds,
-            runtime_estimate_source=(
-                RuntimeEstimateSource.MANUAL if runtime_seconds is not None else None
-            ),
         )
 
     def validate(self) -> tuple[bool, str]:
         fleet_raw = self.query_one("#fleet_select", Select).value
         if not fleet_raw:
             return False, "Please select a Spot Fleet."
-        runtime_minutes_raw = self.query_one("#runtime_minutes", Input).value.strip()
-        if not runtime_minutes_raw:
-            return False, "Please enter a runtime estimate (minutes)."
-        try:
-            minutes = int(runtime_minutes_raw)
-            if minutes <= 0:
-                return False, "Runtime estimate must be > 0 minutes."
-        except Exception:
-            return False, "Runtime estimate must be an integer number of minutes."
         return True, ""
 
     def on_select_changed(self, event: Select.Changed) -> None:
@@ -132,12 +100,6 @@ class Stage3HardwareSelection(CreateWorkloadStage):
                 self._load_fleet_details(str(value))
             else:
                 self._render_fleet_metadata(None)
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "run_profiling":
-            notify = getattr(self.app, "notify", None)
-            if callable(notify):
-                notify("Profiling is not implemented yet. Please enter a manual runtime.", severity="warning")
 
     @work(thread=True, exclusive=True)
     def _load_fleets(self) -> None:
@@ -204,4 +166,3 @@ class Stage3HardwareSelection(CreateWorkloadStage):
         self.query_one("#fleet_instances", Static).update(f"Instance types: {instances}")
         self.query_one("#fleet_caps", Static).update(f"Target capacities: {caps}")
         self.query_one("#fleet_purpose", Static).update(f"Purpose: {purpose}")
-

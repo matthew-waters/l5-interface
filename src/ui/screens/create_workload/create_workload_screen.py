@@ -1,4 +1,4 @@
-"""Create Workload wizard screen (Stages 1–4)."""
+"""Create Workload wizard screen (Stages 1–7)."""
 
 from __future__ import annotations
 

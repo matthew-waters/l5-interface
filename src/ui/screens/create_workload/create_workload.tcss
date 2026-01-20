@@ -65,7 +65,22 @@ CreateWorkloadScreen #status_line {
     padding: 1 1;
 }
 
-/* Stage 4 - Hardware Configuration Styles */
+/* Stage 4 - Hardware Selection Styles */
 #stage_4_container {
+    padding: 1 1;
+}
+
+/* Stage 5 - Runtime Estimate Styles */
+#stage_5_container {
+    padding: 1 1;
+}
+
+/* Stage 6 - Scheduling Styles */
+#stage_6_container {
+    padding: 1 1;
+}
+
+/* Stage 7 - Confirmation Styles */
+#stage_7_container {
     padding: 1 1;
 }

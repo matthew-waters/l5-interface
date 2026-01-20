@@ -12,7 +12,10 @@ from src.ui.screens.create_workload.components import ids
 from src.ui.screens.create_workload.stage_1_general_details import Stage1GeneralDetails
 from src.ui.screens.create_workload.stage_2_job_semantics import Stage2JobSemantics
 from src.ui.screens.create_workload.stage_3_job_specification import Stage3JobSpecification
-from src.ui.screens.create_workload.stage_3_hardware_selection import Stage3HardwareSelection
+from src.ui.screens.create_workload.stage_4_hardware_selection import Stage4HardwareSelection
+from src.ui.screens.create_workload.stage_5_runtime_estimate import Stage5RuntimeEstimate
+from src.ui.screens.create_workload.stage_6_scheduling import Stage6Scheduling
+from src.ui.screens.create_workload.stage_7_confirmation import Stage7Confirmation
 
 
 class CreateWorkloadStageTabs(Widget):
@@ -29,6 +32,9 @@ class CreateWorkloadStageTabs(Widget):
             yield TabPane("2. Job Semantics", id="semantics")
             yield TabPane("3. Job Specification", id="job_spec")
             yield TabPane("4. Hardware Select", id="hardware")
+            yield TabPane("5. Runtime Estimate", id="runtime")
+            yield TabPane("6. Scheduling", id="scheduling")
+            yield TabPane("7. Confirmation", id="confirmation")
 
     def load_config(self, config: WorkloadConfig | None) -> None:
         """Set the active config and refresh the current stage UI from it."""
@@ -75,8 +81,14 @@ class CreateWorkloadStageTabs(Widget):
             stage = Stage2JobSemantics()
         elif stage_id == StageId.JOB_SPECIFICATION:
             stage = Stage3JobSpecification()
+        elif stage_id == StageId.HARDWARE_SELECT:
+            stage = Stage4HardwareSelection()
+        elif stage_id == StageId.RUNTIME_ESTIMATE:
+            stage = Stage5RuntimeEstimate()
+        elif stage_id == StageId.SCHEDULING:
+            stage = Stage6Scheduling()
         else:
-            stage = Stage3HardwareSelection()
+            stage = Stage7Confirmation()
 
         pane.mount(stage)
         if self._config is not None:
@@ -89,6 +101,9 @@ class CreateWorkloadStageTabs(Widget):
             StageId.JOB_SEMANTICS: "semantics",
             StageId.JOB_SPECIFICATION: "job_spec",
             StageId.HARDWARE_SELECT: "hardware",
+            StageId.RUNTIME_ESTIMATE: "runtime",
+            StageId.SCHEDULING: "scheduling",
+            StageId.CONFIRMATION: "confirmation",
         }[stage_id]
 
     @staticmethod
@@ -98,5 +113,8 @@ class CreateWorkloadStageTabs(Widget):
             "semantics": StageId.JOB_SEMANTICS,
             "job_spec": StageId.JOB_SPECIFICATION,
             "hardware": StageId.HARDWARE_SELECT,
+            "runtime": StageId.RUNTIME_ESTIMATE,
+            "scheduling": StageId.SCHEDULING,
+            "confirmation": StageId.CONFIRMATION,
         }[pane_id]
 

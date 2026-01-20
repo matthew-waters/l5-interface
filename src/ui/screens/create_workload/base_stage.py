@@ -14,6 +14,9 @@ class StageId(IntEnum):
     JOB_SEMANTICS = 2
     JOB_SPECIFICATION = 3
     HARDWARE_SELECT = 4
+    RUNTIME_ESTIMATE = 5
+    SCHEDULING = 6
+    CONFIRMATION = 7
 
 
 class CreateWorkloadStage(Widget):
