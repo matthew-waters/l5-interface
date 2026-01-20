@@ -76,9 +76,16 @@ CreateWorkloadScreen #status_line {
 }
 
 #stage_2_container .runtime_input_fields {
-    height: 5;
+    height: auto;
 }
 
+#stage_2_container .runtime_input_fields > Input {
+    width: 16;
+}
+
+#stage_2_container .runtime_input_fields > Switch {
+    width: 10;
+}
 #stage_2_container Input.input_error {
     border: solid $error;
 }
