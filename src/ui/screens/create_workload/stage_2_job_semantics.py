@@ -23,8 +23,8 @@ class Stage2JobSemantics(CreateWorkloadStage):
     def compose(self) -> ComposeResult:
         with Container(id=ids.STAGE_2_CONTAINER_ID):
             with VerticalScroll():
-                yield Static("Runtime Bounds", classes="section_title")
-                with Container(classes="runtime_bounds_box"):
+                with Container(classes="runtime_bounds_box") as runtime_bounds:
+                    runtime_bounds.border_title = "Runtime Bounds"
                     with Vertical(classes="runtime_input"):
                         yield Static("Deadline", classes="section_title")
                         yield Static(
@@ -48,6 +48,7 @@ class Stage2JobSemantics(CreateWorkloadStage):
     def load_from_config(self, config: WorkloadConfig) -> None:
         deadline_input = self.query_one("#deadline_at", Input)
         deadline_enabled = self.query_one("#deadline_enabled", Switch)
+        self._set_deadline_error(False)
         if config.deadline_at is None:
             deadline_enabled.value = False
             deadline_input.value = ""
@@ -58,6 +59,7 @@ class Stage2JobSemantics(CreateWorkloadStage):
 
         earliest_input = self.query_one("#earliest_start_at", Input)
         earliest_enabled = self.query_one("#earliest_start_enabled", Switch)
+        self._set_earliest_start_error(False)
         if config.earliest_start_at is None:
             earliest_enabled.value = False
             earliest_input.value = ""
@@ -69,13 +71,29 @@ class Stage2JobSemantics(CreateWorkloadStage):
     def apply_to_config(self, config: WorkloadConfig) -> WorkloadConfig:
         deadline_enabled = self.query_one("#deadline_enabled", Switch).value
         deadline_raw = self.query_one("#deadline_at", Input).value.strip()
-        deadline_at = None if not deadline_enabled or not deadline_raw else self._parse_dt(deadline_raw)
+        if not deadline_enabled or not deadline_raw:
+            deadline_at = None
+            self._set_deadline_error(False)
+        else:
+            try:
+                deadline_at = self._parse_dt(deadline_raw)
+                self._set_deadline_error(False)
+            except ValueError:
+                self._set_deadline_error(True)
+                deadline_at = config.deadline_at
 
         earliest_enabled = self.query_one("#earliest_start_enabled", Switch).value
         earliest_raw = self.query_one("#earliest_start_at", Input).value.strip()
-        earliest_start_at = (
-            None if not earliest_enabled or not earliest_raw else self._parse_dt(earliest_raw)
-        )
+        if not earliest_enabled or not earliest_raw:
+            earliest_start_at = None
+            self._set_earliest_start_error(False)
+        else:
+            try:
+                earliest_start_at = self._parse_dt(earliest_raw)
+                self._set_earliest_start_error(False)
+            except ValueError:
+                self._set_earliest_start_error(True)
+                earliest_start_at = config.earliest_start_at
 
         return replace(
             config,
@@ -108,25 +126,76 @@ class Stage2JobSemantics(CreateWorkloadStage):
     def on_switch_changed(self, event: Switch.Changed) -> None:
         if event.switch.id == "deadline_enabled":
             self._set_deadline_enabled(event.switch.value)
+            self._validate_deadline_input()
         elif event.switch.id == "earliest_start_enabled":
             self._set_earliest_start_enabled(event.switch.value)
+            self._validate_earliest_start_input()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        if event.input.id == "deadline_at":
+            self._validate_deadline_input()
+        elif event.input.id == "earliest_start_at":
+            self._validate_earliest_start_input()
 
     def _set_deadline_enabled(self, enabled: bool) -> None:
         deadline_input = self.query_one("#deadline_at", Input)
         deadline_input.disabled = not enabled
         if not enabled:
             deadline_input.value = ""
+            self._set_deadline_error(False)
 
     def _set_earliest_start_enabled(self, enabled: bool) -> None:
         earliest_input = self.query_one("#earliest_start_at", Input)
         earliest_input.disabled = not enabled
         if not enabled:
             earliest_input.value = ""
+            self._set_earliest_start_error(False)
+
+    def _validate_deadline_input(self) -> None:
+        deadline_enabled = self.query_one("#deadline_enabled", Switch).value
+        deadline_raw = self.query_one("#deadline_at", Input).value.strip()
+        if not deadline_enabled or not deadline_raw:
+            self._set_deadline_error(False)
+            return
+        try:
+            self._parse_dt(deadline_raw)
+            self._set_deadline_error(False)
+        except ValueError:
+            self._set_deadline_error(True)
+
+    def _validate_earliest_start_input(self) -> None:
+        earliest_enabled = self.query_one("#earliest_start_enabled", Switch).value
+        earliest_raw = self.query_one("#earliest_start_at", Input).value.strip()
+        if not earliest_enabled or not earliest_raw:
+            self._set_earliest_start_error(False)
+            return
+        try:
+            self._parse_dt(earliest_raw)
+            self._set_earliest_start_error(False)
+        except ValueError:
+            self._set_earliest_start_error(True)
+
+    def _set_deadline_error(self, has_error: bool) -> None:
+        input_widget = self.query_one("#deadline_at", Input)
+        if has_error:
+            input_widget.add_class("input_error")
+        else:
+            input_widget.remove_class("input_error")
+
+    def _set_earliest_start_error(self, has_error: bool) -> None:
+        input_widget = self.query_one("#earliest_start_at", Input)
+        if has_error:
+            input_widget.add_class("input_error")
+        else:
+            input_widget.remove_class("input_error")
 
     @staticmethod
     def _parse_dt(value: str) -> datetime:
         raw = value.replace(" ", "T")
-        dt = datetime.fromisoformat(raw)
+        try:
+            dt = datetime.fromisoformat(raw)
+        except ValueError as exc:
+            raise ValueError("Invalid date/time. Use YYYY-MM-DD HH:MM") from exc
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
         return dt

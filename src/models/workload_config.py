@@ -86,74 +86,116 @@ class WorkloadConfig:
         return replace(self, updated_at=datetime.now(tz=timezone.utc))
 
     def to_json(self) -> dict[str, Any]:
-        data = asdict(self)
-        data["created_at"] = self._dt_to_iso(self.created_at)
-        data["updated_at"] = self._dt_to_iso(self.updated_at)
-        if self.deadline_at is not None:
-            data["deadline_at"] = self._dt_to_iso(self.deadline_at)
-        if self.earliest_start_at is not None:
-            data["earliest_start_at"] = self._dt_to_iso(self.earliest_start_at)
-
-        if self.delay_tolerance is not None:
-            data["delay_tolerance"] = self.delay_tolerance.value
-        if self.runtime_estimate_source is not None:
-            data["runtime_estimate_source"] = self.runtime_estimate_source.value
-
-        return data
+        return {
+            "meta": {
+                "version": self.version,
+                "config_id": self.config_id,
+                "created_at": self._dt_to_iso(self.created_at),
+                "updated_at": self._dt_to_iso(self.updated_at),
+            },
+            "general": {
+                "name": self.name,
+                "description": self.description,
+            },
+            "job_semantics": {
+                "interruptible": self.interruptible,
+                "delay_tolerance": (
+                    self.delay_tolerance.value if self.delay_tolerance is not None else None
+                ),
+                "runtime_bounds": {
+                    "deadline_at": (
+                        self._dt_to_iso(self.deadline_at) if self.deadline_at is not None else None
+                    ),
+                    "earliest_start_at": (
+                        self._dt_to_iso(self.earliest_start_at)
+                        if self.earliest_start_at is not None
+                        else None
+                    ),
+                },
+            },
+            "hardware": {
+                "fleet": {
+                    "id": self.fleet_id,
+                    "name": self.fleet_name,
+                    "region": self.fleet_region,
+                    "instance_types": self.fleet_instance_types,
+                    "target_capacities": self.fleet_target_capacities,
+                    "metadata": self.fleet_metadata,
+                },
+            },
+            "runtime_estimate": {
+                "seconds": self.runtime_estimate_seconds,
+                "source": (
+                    self.runtime_estimate_source.value
+                    if self.runtime_estimate_source is not None
+                    else None
+                ),
+            },
+        }
 
     @classmethod
     def from_json(cls, data: dict[str, Any]) -> Self:
+        meta = dict(data.get("meta") or {})
+        general = dict(data.get("general") or {})
+        job_semantics = dict(data.get("job_semantics") or {})
+        runtime_bounds = dict(job_semantics.get("runtime_bounds") or {})
+        hardware = dict(data.get("hardware") or {})
+        fleet = dict(hardware.get("fleet") or {})
+        runtime_estimate = dict(data.get("runtime_estimate") or {})
+
         return cls(
-            version=int(data.get("version", 1)),
-            config_id=str(data["config_id"]),
-            created_at=cls._dt_from_iso(str(data["created_at"])),
-            updated_at=cls._dt_from_iso(str(data["updated_at"])),
-            name=str(data.get("name", "") or ""),
-            description=str(data.get("description", "") or ""),
+            version=int(meta.get("version", 1)),
+            config_id=str(meta["config_id"]),
+            created_at=cls._dt_from_iso(str(meta["created_at"])),
+            updated_at=cls._dt_from_iso(str(meta["updated_at"])),
+            name=str(general.get("name", "") or ""),
+            description=str(general.get("description", "") or ""),
             interruptible=(
-                bool(data["interruptible"]) if data.get("interruptible") is not None else None
+                bool(job_semantics["interruptible"])
+                if job_semantics.get("interruptible") is not None
+                else None
             ),
             delay_tolerance=(
-                DelayTolerance(str(data["delay_tolerance"]))
-                if data.get("delay_tolerance") is not None
+                DelayTolerance(str(job_semantics["delay_tolerance"]))
+                if job_semantics.get("delay_tolerance") is not None
                 else None
             ),
             deadline_at=(
-                cls._dt_from_iso(str(data["deadline_at"]))
-                if data.get("deadline_at") is not None
+                cls._dt_from_iso(str(runtime_bounds["deadline_at"]))
+                if runtime_bounds.get("deadline_at") is not None
                 else None
             ),
             earliest_start_at=(
-                cls._dt_from_iso(str(data["earliest_start_at"]))
-                if data.get("earliest_start_at") is not None
+                cls._dt_from_iso(str(runtime_bounds["earliest_start_at"]))
+                if runtime_bounds.get("earliest_start_at") is not None
                 else None
             ),
-            fleet_id=(int(data["fleet_id"]) if data.get("fleet_id") is not None else None),
-            fleet_name=(str(data["fleet_name"]) if data.get("fleet_name") is not None else None),
+            fleet_id=(int(fleet["id"]) if fleet.get("id") is not None else None),
+            fleet_name=(str(fleet["name"]) if fleet.get("name") is not None else None),
             fleet_region=(
-                str(data["fleet_region"]) if data.get("fleet_region") is not None else None
+                str(fleet["region"]) if fleet.get("region") is not None else None
             ),
             fleet_instance_types=(
-                list(data["fleet_instance_types"])
-                if data.get("fleet_instance_types") is not None
+                list(fleet["instance_types"])
+                if fleet.get("instance_types") is not None
                 else None
             ),
             fleet_target_capacities=(
-                [int(x) for x in data["fleet_target_capacities"]]
-                if data.get("fleet_target_capacities") is not None
+                [int(x) for x in fleet["target_capacities"]]
+                if fleet.get("target_capacities") is not None
                 else None
             ),
             fleet_metadata=(
-                dict(data["fleet_metadata"]) if data.get("fleet_metadata") is not None else None
+                dict(fleet["metadata"]) if fleet.get("metadata") is not None else None
             ),
             runtime_estimate_seconds=(
-                int(data["runtime_estimate_seconds"])
-                if data.get("runtime_estimate_seconds") is not None
+                int(runtime_estimate["seconds"])
+                if runtime_estimate.get("seconds") is not None
                 else None
             ),
             runtime_estimate_source=(
-                RuntimeEstimateSource(str(data["runtime_estimate_source"]))
-                if data.get("runtime_estimate_source") is not None
+                RuntimeEstimateSource(str(runtime_estimate["source"]))
+                if runtime_estimate.get("source") is not None
                 else None
             ),
         )

@@ -52,6 +52,7 @@ class CreateWorkloadStageTabs(Widget):
         return None
 
     def go_to(self, stage_id: StageId) -> None:
+        self._apply_stage_to_config(self._stage_id)
         self._stage_id = stage_id
         tabbed = self.query_one(f"#{ids.STAGE_TABBED_CONTENT_ID}", TabbedContent)
         tabbed.active = self._stage_id_to_pane_id(stage_id)
@@ -61,7 +62,10 @@ class CreateWorkloadStageTabs(Widget):
         pane_id = event.pane.id or ""
         if not pane_id:
             return
+        previous_stage_id = self._stage_id
         stage_id = self._pane_id_to_stage_id(pane_id)
+        if stage_id != previous_stage_id:
+            self._apply_stage_to_config(previous_stage_id)
         self._stage_id = stage_id
         self._ensure_stage_mounted(stage_id)
 
@@ -93,6 +97,24 @@ class CreateWorkloadStageTabs(Widget):
         pane.mount(stage)
         if self._config is not None:
             stage.load_from_config(self._config)
+
+    def _apply_stage_to_config(self, stage_id: StageId) -> None:
+        if self._config is None:
+            return
+        tabbed = self.query_one(f"#{ids.STAGE_TABBED_CONTENT_ID}", TabbedContent)
+        pane = tabbed.query_one(f"#{self._stage_id_to_pane_id(stage_id)}", TabPane)
+        for child in pane.children:
+            if isinstance(child, CreateWorkloadStage):
+                try:
+                    self._config = child.apply_to_config(self._config)
+                except ValueError as exc:
+                    notify = getattr(self.app, "notify", None)
+                    if callable(notify):
+                        notify(
+                            f"Unable to save changes: {exc}",
+                            severity="error",
+                        )
+                return
 
     @staticmethod
     def _stage_id_to_pane_id(stage_id: StageId) -> str:

@@ -79,6 +79,10 @@ CreateWorkloadScreen #status_line {
     height: 5;
 }
 
+#stage_2_container Input.input_error {
+    border: solid $error;
+}
+
 /* Stage 3 - Job Specification Styles */
 #stage_3_container {
     padding: 1 1;
