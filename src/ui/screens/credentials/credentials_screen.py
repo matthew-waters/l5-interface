@@ -74,10 +74,6 @@ class CredentialsScreen(Screen[None]):
                     classes="muted",
                 )
 
-            with Horizontal(classes="card"):
-                yield Button("(s) Save", id="save_btn", variant="primary")
-                yield Button("Back to Home", id="back_btn")
-                
         yield Footer(show_command_palette=False)
 
     def on_mount(self) -> None:
@@ -116,9 +112,3 @@ class CredentialsScreen(Screen[None]):
         notify = getattr(self.app, "notify", None)
         if callable(notify):
             notify("Credentials saved.", severity="information")
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "save_btn":
-            self._save()
-        elif event.button.id == "back_btn":
-            self.app.switch_screen("home")
