@@ -100,6 +100,14 @@ CreateWorkloadScreen #status_line {
     padding: 1 1;
 }
 
+#stage_4_container .region_select_box {
+    border: double $primary;
+    padding: 1 2;
+    background: $surface;
+    margin-bottom: 1;
+    height: auto;
+}
+
 /* Stage 5 - Runtime Estimate Styles */
 #stage_5_container {
     padding: 1 1;

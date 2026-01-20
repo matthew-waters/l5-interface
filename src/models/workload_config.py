@@ -60,6 +60,7 @@ class WorkloadConfig:
     earliest_start_at: datetime | None = None
 
     # ---- Stage 2.3: hardware selection + runtime ----
+    region: str | None = None
     fleet_id: int | None = None
     fleet_name: str | None = None
     fleet_region: str | None = None
@@ -114,6 +115,7 @@ class WorkloadConfig:
                 },
             },
             "hardware": {
+                "region": self.region,
                 "fleet": {
                     "id": self.fleet_id,
                     "name": self.fleet_name,
@@ -170,6 +172,7 @@ class WorkloadConfig:
                 if runtime_bounds.get("earliest_start_at") is not None
                 else None
             ),
+            region=(str(hardware["region"]) if hardware.get("region") is not None else None),
             fleet_id=(int(fleet["id"]) if fleet.get("id") is not None else None),
             fleet_name=(str(fleet["name"]) if fleet.get("name") is not None else None),
             fleet_region=(
