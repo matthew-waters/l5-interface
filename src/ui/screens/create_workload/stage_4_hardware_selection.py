@@ -39,6 +39,7 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         self._pending_az: str | None = None
         self._pending_target_capacity: int | None = None
         self._fleets: list[RequestGroup] | None = None
+        self._hydrating: bool = False
 
     def compose(self) -> ComposeResult:
         with Container(id=ids.STAGE_4_CONTAINER_ID):
@@ -60,59 +61,63 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         self._load_regions()
 
     def load_from_config(self, config: WorkloadConfig) -> None:
-        region_select = self.query_one("#region_select", Select)
-        fleet_select = self.query_one("#fleet_select", Select)
-        if config.region is None:
-            region_select.clear()
-            self._pending_region = None
-            self._pending_fleet_id = None
-            self._pending_az = None
-            self._pending_target_capacity = None
-            self._refresh_fleet_options(None)
-            self._refresh_az_options(None)
-            self._refresh_target_capacity_options(None)
-            return
-
-        self._pending_region = config.region
-        self._pending_fleet_id = str(config.fleet_id) if config.fleet_id is not None else None
-        self._pending_az = config.availability_zone
-        self._pending_target_capacity = config.fleet_target_capacity
-        if self._fleets is None:
-            self._refresh_fleet_options(None, loading=True)
-            self._refresh_az_options(None, loading=True)
-            self._refresh_target_capacity_options(None, loading=True)
+        self._hydrating = True
         try:
-            region_select.value = config.region
-            self._pending_region = None
-        except Exception:
-            # Options may not be loaded yet; defer until _set_region_options.
-            return
-        self._refresh_fleet_options(config.region, preferred_id=self._pending_fleet_id)
-        self._refresh_az_options(config.region, preferred_az=self._pending_az)
-        self._refresh_target_capacity_options(
-            self._pending_fleet_id, preferred_capacity=self._pending_target_capacity
-        )
-        if self._pending_fleet_id:
-            try:
-                fleet_select.value = self._pending_fleet_id
+            region_select = self.query_one("#region_select", Select)
+            fleet_select = self.query_one("#fleet_select", Select)
+            if config.region is None:
+                region_select.clear()
+                self._pending_region = None
                 self._pending_fleet_id = None
-            except Exception:
-                # If options aren't ready, keep pending.
-                return
-        if self._pending_az:
-            try:
-                self.query_one("#az_select", Select).value = self._pending_az
                 self._pending_az = None
-            except Exception:
-                return
-        if self._pending_target_capacity is not None:
-            try:
-                self.query_one("#target_capacity_select", Select).value = str(
-                    self._pending_target_capacity
-                )
                 self._pending_target_capacity = None
-            except Exception:
+                self._refresh_fleet_options(None)
+                self._refresh_az_options(None)
+                self._refresh_target_capacity_options(None)
                 return
+
+            self._pending_region = config.region
+            self._pending_fleet_id = str(config.fleet_id) if config.fleet_id is not None else None
+            self._pending_az = config.availability_zone
+            self._pending_target_capacity = config.fleet_target_capacity
+            if self._fleets is None:
+                self._refresh_fleet_options(None, loading=True)
+                self._refresh_az_options(None, loading=True)
+                self._refresh_target_capacity_options(None, loading=True)
+            try:
+                region_select.value = config.region
+                self._pending_region = None
+            except Exception:
+                # Options may not be loaded yet; defer until _set_region_options.
+                return
+            self._refresh_fleet_options(config.region, preferred_id=self._pending_fleet_id)
+            self._refresh_az_options(config.region, preferred_az=self._pending_az)
+            self._refresh_target_capacity_options(
+                self._pending_fleet_id, preferred_capacity=self._pending_target_capacity
+            )
+            if self._pending_fleet_id:
+                try:
+                    fleet_select.value = self._pending_fleet_id
+                    self._pending_fleet_id = None
+                except Exception:
+                    # If options aren't ready, keep pending.
+                    return
+            if self._pending_az:
+                try:
+                    self.query_one("#az_select", Select).value = self._pending_az
+                    self._pending_az = None
+                except Exception:
+                    return
+            if self._pending_target_capacity is not None:
+                try:
+                    self.query_one("#target_capacity_select", Select).value = str(
+                        self._pending_target_capacity
+                    )
+                    self._pending_target_capacity = None
+                except Exception:
+                    return
+        finally:
+            self._hydrating = False
 
     def apply_to_config(self, config: WorkloadConfig) -> WorkloadConfig:
         region_raw = self.query_one("#region_select", Select).value
@@ -168,6 +173,8 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         return True, ""
 
     def on_select_changed(self, event: Select.Changed) -> None:
+        if self._hydrating:
+            return
         if event.select.id == "region_select":
             region = str(event.value) if event.value else None
             self._pending_fleet_id = None
@@ -200,13 +207,17 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         if self._pending_region:
             valid_regions = {value for _, value in region_options}
             if self._pending_region in valid_regions:
-                region_select.value = self._pending_region
-                self._refresh_fleet_options(self._pending_region, preferred_id=self._pending_fleet_id)
-                self._refresh_az_options(self._pending_region, preferred_az=self._pending_az)
-                self._refresh_target_capacity_options(
-                    self._pending_fleet_id,
-                    preferred_capacity=self._pending_target_capacity,
-                )
+                self._hydrating = True
+                try:
+                    region_select.value = self._pending_region
+                    self._refresh_fleet_options(self._pending_region, preferred_id=self._pending_fleet_id)
+                    self._refresh_az_options(self._pending_region, preferred_az=self._pending_az)
+                    self._refresh_target_capacity_options(
+                        self._pending_fleet_id,
+                        preferred_capacity=self._pending_target_capacity,
+                    )
+                finally:
+                    self._hydrating = False
             self._pending_region = None
             return
 

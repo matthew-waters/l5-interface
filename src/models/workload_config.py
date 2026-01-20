@@ -65,9 +65,6 @@ class WorkloadConfig:
     fleet_id: int | None = None
     fleet_name: str | None = None
     fleet_target_capacity: int | None = None
-    fleet_region: str | None = None
-    fleet_instance_types: list[str] | None = None
-    fleet_target_capacities: list[int] | None = None
     fleet_metadata: dict[str, Any] | None = None
 
     runtime_estimate_seconds: int | None = None
@@ -123,9 +120,6 @@ class WorkloadConfig:
                     "id": self.fleet_id,
                     "name": self.fleet_name,
                     "target_capacity": self.fleet_target_capacity,
-                    "region": self.fleet_region,
-                    "instance_types": self.fleet_instance_types,
-                    "target_capacities": self.fleet_target_capacities,
                     "metadata": self.fleet_metadata,
                 },
             },
@@ -186,19 +180,6 @@ class WorkloadConfig:
             fleet_name=(str(fleet["name"]) if fleet.get("name") is not None else None),
             fleet_target_capacity=(
                 int(fleet["target_capacity"]) if fleet.get("target_capacity") is not None else None
-            ),
-            fleet_region=(
-                str(fleet["region"]) if fleet.get("region") is not None else None
-            ),
-            fleet_instance_types=(
-                list(fleet["instance_types"])
-                if fleet.get("instance_types") is not None
-                else None
-            ),
-            fleet_target_capacities=(
-                [int(x) for x in fleet["target_capacities"]]
-                if fleet.get("target_capacities") is not None
-                else None
             ),
             fleet_metadata=(
                 dict(fleet["metadata"]) if fleet.get("metadata") is not None else None
