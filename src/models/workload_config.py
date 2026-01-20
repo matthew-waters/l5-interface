@@ -61,6 +61,7 @@ class WorkloadConfig:
 
     # ---- Stage 2.3: hardware selection + runtime ----
     region: str | None = None
+    availability_zone: str | None = None
     fleet_id: int | None = None
     fleet_name: str | None = None
     fleet_region: str | None = None
@@ -116,6 +117,7 @@ class WorkloadConfig:
             },
             "hardware": {
                 "region": self.region,
+                "availability_zone": self.availability_zone,
                 "fleet": {
                     "id": self.fleet_id,
                     "name": self.fleet_name,
@@ -173,6 +175,11 @@ class WorkloadConfig:
                 else None
             ),
             region=(str(hardware["region"]) if hardware.get("region") is not None else None),
+            availability_zone=(
+                str(hardware["availability_zone"])
+                if hardware.get("availability_zone") is not None
+                else None
+            ),
             fleet_id=(int(fleet["id"]) if fleet.get("id") is not None else None),
             fleet_name=(str(fleet["name"]) if fleet.get("name") is not None else None),
             fleet_region=(

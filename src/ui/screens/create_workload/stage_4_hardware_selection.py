@@ -6,7 +6,7 @@ from dataclasses import replace
 
 from textual import work
 from textual.app import ComposeResult
-from textual.containers import Container, Vertical
+from textual.containers import Container, VerticalScroll
 from textual.widgets import Select, Static
 
 from src.backend.data.availability_data import get_available_fleets
@@ -27,19 +27,27 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         "us-west-1": "N. California",
     }
 
+    REGION_AZS: dict[str, list[str]] = {
+        "eu-west-2": ["euw2-az1", "euw2-az2", "euw2-az3"],
+        "us-west-1": ["usw1-az1", "usw1-az3"],
+    }
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._pending_region: str | None = None
         self._pending_fleet_id: str | None = None
+        self._pending_az: str | None = None
         self._fleets: list[RequestGroup] | None = None
 
     def compose(self) -> ComposeResult:
         with Container(id=ids.STAGE_4_CONTAINER_ID):
-            with Vertical():
+            with VerticalScroll():
                 with Container(classes="region_select_box") as region_box:
                     region_box.border_title = "Region selection"
                     yield Static("Region", classes="muted")
                     yield Select(options=[], id="region_select", prompt="Loading regions…")
+                    yield Static("Availability zone", classes="muted")
+                    yield Select(options=[], id="az_select", prompt="Select region first")
                 with Container(classes="fleet_select_box") as fleet_box:
                     fleet_box.border_title = "Fleet selection"
                     yield Static("Fleet", classes="muted")
@@ -55,13 +63,17 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             region_select.clear()
             self._pending_region = None
             self._pending_fleet_id = None
+            self._pending_az = None
             self._refresh_fleet_options(None)
+            self._refresh_az_options(None)
             return
 
         self._pending_region = config.region
         self._pending_fleet_id = str(config.fleet_id) if config.fleet_id is not None else None
+        self._pending_az = config.availability_zone
         if self._fleets is None:
             self._refresh_fleet_options(None, loading=True)
+            self._refresh_az_options(None, loading=True)
         try:
             region_select.value = config.region
             self._pending_region = None
@@ -69,12 +81,19 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             # Options may not be loaded yet; defer until _set_region_options.
             return
         self._refresh_fleet_options(config.region, preferred_id=self._pending_fleet_id)
+        self._refresh_az_options(config.region, preferred_az=self._pending_az)
         if self._pending_fleet_id:
             try:
                 fleet_select.value = self._pending_fleet_id
                 self._pending_fleet_id = None
             except Exception:
                 # If options aren't ready, keep pending.
+                return
+        if self._pending_az:
+            try:
+                self.query_one("#az_select", Select).value = self._pending_az
+                self._pending_az = None
+            except Exception:
                 return
 
     def apply_to_config(self, config: WorkloadConfig) -> WorkloadConfig:
@@ -90,6 +109,12 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             if fleet_raw not in (None, "", Select.BLANK)
             else None
         )
+        az_raw = self.query_one("#az_select", Select).value
+        availability_zone = (
+            str(az_raw)
+            if az_raw not in (None, "", Select.BLANK)
+            else None
+        )
         fleet_name = None
         if fleet_id is not None and self._fleets:
             fleet = next((f for f in self._fleets if f.id == fleet_id), None)
@@ -97,6 +122,7 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         return replace(
             config,
             region=region,
+            availability_zone=availability_zone,
             fleet_id=fleet_id,
             fleet_name=fleet_name,
         )
@@ -108,13 +134,18 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         fleet_raw = self.query_one("#fleet_select", Select).value
         if not fleet_raw:
             return False, "Please select a fleet."
+        az_raw = self.query_one("#az_select", Select).value
+        if not az_raw:
+            return False, "Please select an availability zone."
         return True, ""
 
     def on_select_changed(self, event: Select.Changed) -> None:
         if event.select.id == "region_select":
             region = str(event.value) if event.value else None
             self._pending_fleet_id = None
+            self._pending_az = None
             self._refresh_fleet_options(region)
+            self._refresh_az_options(region)
 
     @work(thread=True, exclusive=True)
     def _load_regions(self) -> None:
@@ -137,16 +168,19 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             if self._pending_region in valid_regions:
                 region_select.value = self._pending_region
                 self._refresh_fleet_options(self._pending_region, preferred_id=self._pending_fleet_id)
+                self._refresh_az_options(self._pending_region, preferred_az=self._pending_az)
             self._pending_region = None
             return
 
         self._refresh_fleet_options(None)
+        self._refresh_az_options(None)
 
     def _set_region_error(self, message: str) -> None:
         sel = self.query_one("#region_select", Select)
         sel.set_options([])
         sel.prompt = "Unable to load regions"
         self._refresh_fleet_options(None)
+        self._refresh_az_options(None)
         notify = getattr(self.app, "notify", None)
         if callable(notify):
             notify(f"Unable to load regions: {message}", severity="error")
@@ -154,6 +188,11 @@ class Stage4HardwareSelection(CreateWorkloadStage):
     def _format_region_label(self, region: str) -> str:
         label = self.REGION_LABELS.get(region)
         return f"{region} / {label}" if label else region
+
+    def _get_region_azs(self, region: str | None) -> list[str]:
+        if not region:
+            return []
+        return list(self.REGION_AZS.get(region, []))
 
     def _refresh_fleet_options(
         self,
@@ -187,4 +226,32 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             valid_ids = {value for _, value in options}
             if preferred_id in valid_ids:
                 fleet_select.value = preferred_id
+
+    def _refresh_az_options(
+        self,
+        region: str | None,
+        *,
+        preferred_az: str | None = None,
+        loading: bool = False,
+    ) -> None:
+        az_select = self.query_one("#az_select", Select)
+        if loading:
+            az_select.set_options([])
+            az_select.prompt = "Loading zones…"
+            az_select.disabled = True
+            return
+
+        azs = self._get_region_azs(region)
+        if not azs:
+            az_select.set_options([])
+            az_select.prompt = "Select region first"
+            az_select.disabled = True
+            return
+
+        options = [(az, az) for az in azs]
+        az_select.set_options(options)
+        az_select.prompt = "Choose availability zone…"
+        az_select.disabled = False
+        if preferred_az and preferred_az in azs:
+            az_select.value = preferred_az
 
