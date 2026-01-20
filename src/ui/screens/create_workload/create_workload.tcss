@@ -34,9 +34,12 @@ CreateWorkloadScreen #stage_tabs > ContentSwitcher {
 
 CreateWorkloadScreen #stage_tabs TabPane {
     height: 1fr;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
+CreateWorkloadStage {
+    height: 1fr;
+}
 CreateWorkloadScreen.picking #stage_panel { display: none; }
 CreateWorkloadScreen.editing #drafts_panel { display: none; }
 

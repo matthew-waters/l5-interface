@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from enum import IntEnum
 
-from textual.widget import Widget
+from textual.containers import VerticalScroll
 
 from src.models.workload_config import WorkloadConfig
 
@@ -19,7 +19,7 @@ class StageId(IntEnum):
     CONFIRMATION = 7
 
 
-class CreateWorkloadStage(Widget):
+class CreateWorkloadStage(VerticalScroll):
     """Base class for a stage UI component."""
 
     stage_id: StageId

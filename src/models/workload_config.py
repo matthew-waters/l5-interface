@@ -56,6 +56,8 @@ class WorkloadConfig:
     # ---- Stage 2.2: job specification (partial for now) ----
     interruptible: bool | None = None
     delay_tolerance: DelayTolerance | None = None
+    deadline_at: datetime | None = None
+    earliest_start_at: datetime | None = None
 
     # ---- Stage 2.3: hardware selection + runtime ----
     fleet_id: int | None = None
@@ -87,6 +89,10 @@ class WorkloadConfig:
         data = asdict(self)
         data["created_at"] = self._dt_to_iso(self.created_at)
         data["updated_at"] = self._dt_to_iso(self.updated_at)
+        if self.deadline_at is not None:
+            data["deadline_at"] = self._dt_to_iso(self.deadline_at)
+        if self.earliest_start_at is not None:
+            data["earliest_start_at"] = self._dt_to_iso(self.earliest_start_at)
 
         if self.delay_tolerance is not None:
             data["delay_tolerance"] = self.delay_tolerance.value
@@ -110,6 +116,16 @@ class WorkloadConfig:
             delay_tolerance=(
                 DelayTolerance(str(data["delay_tolerance"]))
                 if data.get("delay_tolerance") is not None
+                else None
+            ),
+            deadline_at=(
+                cls._dt_from_iso(str(data["deadline_at"]))
+                if data.get("deadline_at") is not None
+                else None
+            ),
+            earliest_start_at=(
+                cls._dt_from_iso(str(data["earliest_start_at"]))
+                if data.get("earliest_start_at") is not None
                 else None
             ),
             fleet_id=(int(data["fleet_id"]) if data.get("fleet_id") is not None else None),
