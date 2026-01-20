@@ -64,15 +64,15 @@ CreateWorkloadScreen #status_line {
 }
 
 #stage_2_container .runtime_bounds_box {
-    border: solid $primary;
+    border: double $primary;
     padding: 1 2;
-    margin-top: 1;
     background: $surface;
     height: 15;
 }
 
 #stage_2_container .runtime_input {
     height: 5;
+    margin-bottom: 1;
 }
 
 #stage_2_container .runtime_input_fields {
