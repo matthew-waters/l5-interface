@@ -37,6 +37,7 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         self._pending_region: str | None = None
         self._pending_fleet_id: str | None = None
         self._pending_az: str | None = None
+        self._pending_target_capacity: int | None = None
         self._fleets: list[RequestGroup] | None = None
 
     def compose(self) -> ComposeResult:
@@ -52,6 +53,8 @@ class Stage4HardwareSelection(CreateWorkloadStage):
                     fleet_box.border_title = "Fleet selection"
                     yield Static("Fleet", classes="muted")
                     yield Select(options=[], id="fleet_select", prompt="Select region first")
+                    yield Static("Target capacity", classes="muted")
+                    yield Select(options=[], id="target_capacity_select", prompt="Select fleet first")
 
     def on_mount(self) -> None:
         self._load_regions()
@@ -64,16 +67,20 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             self._pending_region = None
             self._pending_fleet_id = None
             self._pending_az = None
+            self._pending_target_capacity = None
             self._refresh_fleet_options(None)
             self._refresh_az_options(None)
+            self._refresh_target_capacity_options(None)
             return
 
         self._pending_region = config.region
         self._pending_fleet_id = str(config.fleet_id) if config.fleet_id is not None else None
         self._pending_az = config.availability_zone
+        self._pending_target_capacity = config.fleet_target_capacity
         if self._fleets is None:
             self._refresh_fleet_options(None, loading=True)
             self._refresh_az_options(None, loading=True)
+            self._refresh_target_capacity_options(None, loading=True)
         try:
             region_select.value = config.region
             self._pending_region = None
@@ -82,6 +89,9 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             return
         self._refresh_fleet_options(config.region, preferred_id=self._pending_fleet_id)
         self._refresh_az_options(config.region, preferred_az=self._pending_az)
+        self._refresh_target_capacity_options(
+            self._pending_fleet_id, preferred_capacity=self._pending_target_capacity
+        )
         if self._pending_fleet_id:
             try:
                 fleet_select.value = self._pending_fleet_id
@@ -93,6 +103,14 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             try:
                 self.query_one("#az_select", Select).value = self._pending_az
                 self._pending_az = None
+            except Exception:
+                return
+        if self._pending_target_capacity is not None:
+            try:
+                self.query_one("#target_capacity_select", Select).value = str(
+                    self._pending_target_capacity
+                )
+                self._pending_target_capacity = None
             except Exception:
                 return
 
@@ -107,6 +125,12 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         fleet_id = (
             int(fleet_raw)
             if fleet_raw not in (None, "", Select.BLANK)
+            else None
+        )
+        target_capacity_raw = self.query_one("#target_capacity_select", Select).value
+        target_capacity = (
+            int(target_capacity_raw)
+            if target_capacity_raw not in (None, "", Select.BLANK)
             else None
         )
         az_raw = self.query_one("#az_select", Select).value
@@ -125,6 +149,7 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             availability_zone=availability_zone,
             fleet_id=fleet_id,
             fleet_name=fleet_name,
+            fleet_target_capacity=target_capacity,
         )
 
     def validate(self) -> tuple[bool, str]:
@@ -134,6 +159,9 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         fleet_raw = self.query_one("#fleet_select", Select).value
         if not fleet_raw:
             return False, "Please select a fleet."
+        target_capacity_raw = self.query_one("#target_capacity_select", Select).value
+        if not target_capacity_raw:
+            return False, "Please select a target capacity."
         az_raw = self.query_one("#az_select", Select).value
         if not az_raw:
             return False, "Please select an availability zone."
@@ -144,8 +172,14 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             region = str(event.value) if event.value else None
             self._pending_fleet_id = None
             self._pending_az = None
+            self._pending_target_capacity = None
             self._refresh_fleet_options(region)
             self._refresh_az_options(region)
+            self._refresh_target_capacity_options(None)
+        elif event.select.id == "fleet_select":
+            fleet_id = str(event.value) if event.value else None
+            self._pending_target_capacity = None
+            self._refresh_target_capacity_options(fleet_id)
 
     @work(thread=True, exclusive=True)
     def _load_regions(self) -> None:
@@ -169,11 +203,16 @@ class Stage4HardwareSelection(CreateWorkloadStage):
                 region_select.value = self._pending_region
                 self._refresh_fleet_options(self._pending_region, preferred_id=self._pending_fleet_id)
                 self._refresh_az_options(self._pending_region, preferred_az=self._pending_az)
+                self._refresh_target_capacity_options(
+                    self._pending_fleet_id,
+                    preferred_capacity=self._pending_target_capacity,
+                )
             self._pending_region = None
             return
 
         self._refresh_fleet_options(None)
         self._refresh_az_options(None)
+        self._refresh_target_capacity_options(None)
 
     def _set_region_error(self, message: str) -> None:
         sel = self.query_one("#region_select", Select)
@@ -181,6 +220,7 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         sel.prompt = "Unable to load regions"
         self._refresh_fleet_options(None)
         self._refresh_az_options(None)
+        self._refresh_target_capacity_options(None)
         notify = getattr(self.app, "notify", None)
         if callable(notify):
             notify(f"Unable to load regions: {message}", severity="error")
@@ -226,6 +266,8 @@ class Stage4HardwareSelection(CreateWorkloadStage):
             valid_ids = {value for _, value in options}
             if preferred_id in valid_ids:
                 fleet_select.value = preferred_id
+        if not preferred_id:
+            self._refresh_target_capacity_options(None)
 
     def _refresh_az_options(
         self,
@@ -254,4 +296,42 @@ class Stage4HardwareSelection(CreateWorkloadStage):
         az_select.disabled = False
         if preferred_az and preferred_az in azs:
             az_select.value = preferred_az
+
+    def _refresh_target_capacity_options(
+        self,
+        fleet_id: str | None,
+        *,
+        preferred_capacity: int | None = None,
+        loading: bool = False,
+    ) -> None:
+        select = self.query_one("#target_capacity_select", Select)
+        if loading:
+            select.set_options([])
+            select.prompt = "Loading capacities…"
+            select.disabled = True
+            return
+
+        if not fleet_id or self._fleets is None:
+            select.set_options([])
+            select.prompt = "Select fleet first"
+            select.disabled = True
+            return
+
+        fleet = next((f for f in self._fleets if str(f.id) == str(fleet_id)), None)
+        capacities = fleet.target_capacities if fleet is not None else None
+        if not capacities:
+            select.set_options([])
+            select.prompt = "No capacities available"
+            select.disabled = True
+            return
+
+        options = [(str(cap), str(cap)) for cap in capacities]
+        select.set_options(options)
+        select.prompt = "Choose capacity…"
+        select.disabled = False
+        if preferred_capacity is not None:
+            value = str(preferred_capacity)
+            valid = {v for _, v in options}
+            if value in valid:
+                select.value = value
 

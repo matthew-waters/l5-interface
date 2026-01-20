@@ -64,6 +64,7 @@ class WorkloadConfig:
     availability_zone: str | None = None
     fleet_id: int | None = None
     fleet_name: str | None = None
+    fleet_target_capacity: int | None = None
     fleet_region: str | None = None
     fleet_instance_types: list[str] | None = None
     fleet_target_capacities: list[int] | None = None
@@ -121,6 +122,7 @@ class WorkloadConfig:
                 "fleet": {
                     "id": self.fleet_id,
                     "name": self.fleet_name,
+                    "target_capacity": self.fleet_target_capacity,
                     "region": self.fleet_region,
                     "instance_types": self.fleet_instance_types,
                     "target_capacities": self.fleet_target_capacities,
@@ -182,6 +184,9 @@ class WorkloadConfig:
             ),
             fleet_id=(int(fleet["id"]) if fleet.get("id") is not None else None),
             fleet_name=(str(fleet["name"]) if fleet.get("name") is not None else None),
+            fleet_target_capacity=(
+                int(fleet["target_capacity"]) if fleet.get("target_capacity") is not None else None
+            ),
             fleet_region=(
                 str(fleet["region"]) if fleet.get("region") is not None else None
             ),
