@@ -1,4 +1,4 @@
-"""Create workload: Stage 2.2 - job configuration (partial for now)."""
+"""Create workload: Stage 2 - job semantics (partial for now)."""
 
 from __future__ import annotations
 

@@ -12,7 +12,8 @@ from src.models.workload_config import WorkloadConfig
 class StageId(IntEnum):
     GENERAL_DETAILS = 1
     JOB_SEMANTICS = 2
-    HARDWARE_SELECT= 3
+    JOB_SPECIFICATION = 3
+    HARDWARE_SELECT = 4
 
 
 class CreateWorkloadStage(Widget):

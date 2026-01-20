@@ -55,12 +55,17 @@ CreateWorkloadScreen #status_line {
     height: 10;
 }
 
-/* Stage 2 - Job Specification Styles */
+/* Stage 2 - Job Semantics Styles */
 #stage_2_container {
     padding: 1 1;
 }
 
-/* Stage 3 - Hardware Configuration Styles */
+/* Stage 3 - Job Specification Styles */
 #stage_3_container {
+    padding: 1 1;
+}
+
+/* Stage 4 - Hardware Configuration Styles */
+#stage_4_container {
     padding: 1 1;
 }

@@ -1,4 +1,4 @@
-"""Create workload: Stage 2.1 - workload definition."""
+"""Create workload: Stage 1 - general details."""
 
 from __future__ import annotations
 

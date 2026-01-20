@@ -11,6 +11,7 @@ from src.ui.screens.create_workload.base_stage import CreateWorkloadStage, Stage
 from src.ui.screens.create_workload.components import ids
 from src.ui.screens.create_workload.stage_1_general_details import Stage1GeneralDetails
 from src.ui.screens.create_workload.stage_2_job_semantics import Stage2JobSemantics
+from src.ui.screens.create_workload.stage_3_job_specification import Stage3JobSpecification
 from src.ui.screens.create_workload.stage_3_hardware_selection import Stage3HardwareSelection
 
 
@@ -26,7 +27,8 @@ class CreateWorkloadStageTabs(Widget):
         with TabbedContent(id=ids.STAGE_TABBED_CONTENT_ID, initial="workload"):
             yield TabPane("1. General Details", id="workload")
             yield TabPane("2. Job Semantics", id="semantics")
-            yield TabPane("3. Hardware Select", id="hardware")
+            yield TabPane("3. Job Specification", id="job_spec")
+            yield TabPane("4. Hardware Select", id="hardware")
 
     def load_config(self, config: WorkloadConfig | None) -> None:
         """Set the active config and refresh the current stage UI from it."""
@@ -71,6 +73,8 @@ class CreateWorkloadStageTabs(Widget):
             stage = Stage1GeneralDetails()
         elif stage_id == StageId.JOB_SEMANTICS:
             stage = Stage2JobSemantics()
+        elif stage_id == StageId.JOB_SPECIFICATION:
+            stage = Stage3JobSpecification()
         else:
             stage = Stage3HardwareSelection()
 
@@ -83,6 +87,7 @@ class CreateWorkloadStageTabs(Widget):
         return {
             StageId.GENERAL_DETAILS: "workload",
             StageId.JOB_SEMANTICS: "semantics",
+            StageId.JOB_SPECIFICATION: "job_spec",
             StageId.HARDWARE_SELECT: "hardware",
         }[stage_id]
 
@@ -91,6 +96,7 @@ class CreateWorkloadStageTabs(Widget):
         return {
             "workload": StageId.GENERAL_DETAILS,
             "semantics": StageId.JOB_SEMANTICS,
+            "job_spec": StageId.JOB_SPECIFICATION,
             "hardware": StageId.HARDWARE_SELECT,
         }[pane_id]
 

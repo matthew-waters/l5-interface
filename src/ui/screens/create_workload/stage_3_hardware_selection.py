@@ -1,4 +1,4 @@
-"""Create workload: Stage 2.3 - hardware configuration + runtime estimate."""
+"""Create workload: Stage 4 - hardware configuration + runtime estimate."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ class Stage3HardwareSelection(CreateWorkloadStage):
         self._pending_fleet_id: str | None = None
 
     def compose(self) -> ComposeResult:
-        with Container(id=ids.STAGE_3_CONTAINER_ID):
+        with Container(id=ids.STAGE_4_CONTAINER_ID):
             yield Static("Spot Fleet selection", classes="section_title")
             with Vertical():
                 yield Static("Fleet", classes="muted")

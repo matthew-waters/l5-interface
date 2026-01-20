@@ -24,3 +24,6 @@ STAGE_2_CONTAINER_ID = "stage_2_container"
 
 # --- Stage 3 ---
 STAGE_3_CONTAINER_ID = "stage_3_container"
+
+# --- Stage 4 ---
+STAGE_4_CONTAINER_ID = "stage_4_container"
