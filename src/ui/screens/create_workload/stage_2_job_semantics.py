@@ -6,7 +6,7 @@ from dataclasses import replace
 from datetime import datetime, timezone
 
 from textual.app import ComposeResult
-from textual.containers import Container, Vertical, VerticalScroll
+from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.widgets import Input, Static, Switch
 
 from src.models.workload_config import WorkloadConfig
@@ -24,21 +24,28 @@ class Stage2JobSemantics(CreateWorkloadStage):
         with Container(id=ids.STAGE_2_CONTAINER_ID):
             with VerticalScroll():
                 yield Switch("Interruptible (checkpointing supported)", id="interruptible")
+
                 yield Static("Runtime Bounds", classes="section_title")
+                with Container(classes="runtime_bounds_box"):
+                    with Vertical(classes="runtime_input"):
+                        yield Static("Deadline", classes="section_title")
+                        yield Static(
+                            "Set a hard deadline for when the job must finish (optional).",
+                            classes="muted",
+                        )
+                        with Horizontal(classes="runtime_input_fields"):
+                            yield Switch("No deadline", id="deadline_none")
+                            yield Input(id="deadline_at", placeholder="YYYY-MM-DD HH:MM")
 
-                yield Static(
-                    "Set a hard deadline for when the job must finish (optional).",
-                    classes="muted",
-                )
-                yield Switch("No deadline", id="deadline_none")
-                yield Input(id="deadline_at", placeholder="YYYY-MM-DD HH:MM")
-
-                yield Static(
-                    "Restrict scheduling so the job cannot start before this time (optional).",
-                    classes="muted",
-                )
-                yield Switch("Enable earliest start", id="earliest_start_enabled")
-                yield Input(id="earliest_start_at", placeholder="YYYY-MM-DD HH:MM")
+                    with Vertical(classes="runtime_input"):     
+                        yield Static("Earliest start time", classes="section_title")
+                        yield Static(
+                            "Restrict scheduling so the job cannot start before this time (optional).",
+                            classes="muted",
+                        )
+                        with Horizontal(classes="runtime_input_fields"):
+                            yield Switch("Enable earliest start", id="earliest_start_enabled")
+                            yield Input(id="earliest_start_at", placeholder="YYYY-MM-DD HH:MM")
 
     def load_from_config(self, config: WorkloadConfig) -> None:
         interruptible = bool(config.interruptible) if config.interruptible is not None else False

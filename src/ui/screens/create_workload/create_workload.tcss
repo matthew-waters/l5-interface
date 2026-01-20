@@ -63,6 +63,22 @@ CreateWorkloadScreen #status_line {
     padding: 1 1;
 }
 
+#stage_2_container .runtime_bounds_box {
+    border: solid $primary;
+    padding: 1 2;
+    margin-top: 1;
+    background: $surface;
+    height: 15;
+}
+
+#stage_2_container .runtime_input {
+    height: 5;
+}
+
+#stage_2_container .runtime_input_fields {
+    height: 5;
+}
+
 /* Stage 3 - Job Specification Styles */
 #stage_3_container {
     padding: 1 1;
